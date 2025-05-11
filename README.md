@@ -8,9 +8,12 @@ The VMU is a programmable memory card, created an accessory to Sega's Dreamcast 
 
 # Data Types
 Chao supports integer variables of 8, 9, and 16 bits. Their names are, respectively:
-int8
-int9
-int16
+
+<c>int8</c>
+
+<c>int9</c>
+
+<c>int16</c>
 
 Ints are all unsigned.
 
