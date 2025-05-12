@@ -7,15 +7,43 @@ Language for Writing VMU Programs
 The VMU is a programmable memory card, created an accessory to Sega's Dreamcast system. A dedicated community has developed their own tools for writing custom code for it, including the <code>aslc86k</code> assembler by Marcus Comstedt. This program generates assembly code compatible with use alongside aslc86k, using a more C-like syntax. 
 
 # Data Types
-Chao supports integer variables of 8, 9, and 16 bits. Their names are, respectively:
+Chao supports integer variables of 8 bits. Its name is:
 
 <code>int8</code>
 
-<code>int9</code>
-
-<code>int16</code>
-
-Ints are all unsigned.
+In Chao, ints are all planned to be unsigned.
 
 # Context-Free Grammar (CFG)
-The CFG will update as the project continues. The grammar of the Chao is "C-like" in that it adheres to many of C's conventions, but note that the hardware limitations of the VMU prevent many data types and functionsdifficult, if not impossible to implement.
+The CFG will update as the project continues. The grammar of the Chao is "C-like" in that it adheres to many of C's conventions, but note that the hardware limitations of the VMU prevent many data types and functions difficult, if not impossible to implement.
+
+Code → Function_List
+Function_List → Function| Function Function_List
+Function → TYPE ID LPAREN Argument_List RPAREN LBRACE Instruction_List RBRACE
+Argument_List → null | Argument | Argument COMMA Argument_List
+Argument → TYPE ID
+Instruction_List → Instruction | Instruction Instruction_List
+Instruction → Assignment | Declaration | If | While | Call
+Assignment→ID EQUAL (ID | NUM) SEMICOLON | ID EQUAL (ID | NUM) OPERATOR (ID | NUM) SEMICOLON
+Declaration → TYPE ID SEMICOLON | TYPE ID EQUAL NUM SEMICOLON
+If → IF LPAREN Condition RPAREN LBRACE Instruction_List RBRACE
+Condition →Comp_List
+Comp_List → Comp | Comp (AND/OR) Comp_List
+Comp → (NUM|ID) OPC (NUM|ID)
+While → WHILE LPAREN Condition RPAREN LBRACE Instruction_List RBRACE
+Call → ID LPAREN Parameter_List RPAREN SEMICOLON
+Parameter_List → Parameter | Parameter COMMA Parameter_List
+Parameter → ID
+
+ID → (a*b*c*d*e*f*g*h*i*j*k*l*m*n*m*o*p*q*r*s*t*u*v*w*x*y*z*)*
+NUM → (0*1*2*3*4*5*6*7*8*9*)*
+EQUAL → =
+SEMICOLON → ;
+LPAREN → (
+RPAREN → )
+LBRACE → {
+RBRACE → }
+COMMA → ,
+AND/OR → && | ||
+OPERATOR → + | - | * | / | << | >> | & | “|” | ^ | ~
+OPC → > | < | >= | <= | == | !=
+TYPE → void | (Any valid data type)
