@@ -17,33 +17,62 @@ In Chao, ints are all planned to be unsigned.
 The CFG will update as the project continues. The grammar of the Chao is "C-like" in that it adheres to many of C's conventions, but note that the hardware limitations of the VMU prevent many data types and functions difficult, if not impossible to implement.
 
 Code → Function_List
+
 Function_List → Function| Function Function_List
+
 Function → TYPE ID LPAREN Argument_List RPAREN LBRACE Instruction_List RBRACE
+
 Argument_List → null | Argument | Argument COMMA Argument_List
+
 Argument → TYPE ID
+
 Instruction_List → Instruction | Instruction Instruction_List
+
 Instruction → Assignment | Declaration | If | While | Call
+
 Assignment→ID EQUAL (ID | NUM) SEMICOLON | ID EQUAL (ID | NUM) OPERATOR (ID | NUM) SEMICOLON
+
 Declaration → TYPE ID SEMICOLON | TYPE ID EQUAL NUM SEMICOLON
+
 If → IF LPAREN Condition RPAREN LBRACE Instruction_List RBRACE
+
 Condition →Comp_List
+
 Comp_List → Comp | Comp (AND/OR) Comp_List
+
 Comp → (NUM|ID) OPC (NUM|ID)
+
 While → WHILE LPAREN Condition RPAREN LBRACE Instruction_List RBRACE
+
 Call → ID LPAREN Parameter_List RPAREN SEMICOLON
+
 Parameter_List → Parameter | Parameter COMMA Parameter_List
+
 Parameter → ID
 
+
 ID → (a*b*c*d*e*f*g*h*i*j*k*l*m*n*m*o*p*q*r*s*t*u*v*w*x*y*z*)*
+
 NUM → (0*1*2*3*4*5*6*7*8*9*)*
+
 EQUAL → =
+
 SEMICOLON → ;
+
 LPAREN → (
+
 RPAREN → )
+
 LBRACE → {
+
 RBRACE → }
+
 COMMA → ,
+
 AND/OR → && | ||
+
 OPERATOR → + | - | * | / | << | >> | & | “|” | ^ | ~
+
 OPC → > | < | >= | <= | == | !=
+
 TYPE → void | (Any valid data type)
