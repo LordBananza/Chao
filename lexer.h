@@ -8,8 +8,10 @@
 #ifndef LEXER_H_
 #define LEXER_H_
 
+#include <stdio.h>
+
 typedef enum TokenType {
-	INT, ID, PLUS, END, MINUS
+	NUM, ID, EQUAL, ANDOR, SEMICOLON, OPERATOR, OPC, LPAREN, RPAREN, LBRACE, RBRACE, COMMA, TYPE, END
 } TokenType;
 
 typedef struct Token {
@@ -19,7 +21,7 @@ typedef struct Token {
 } Token;
 
 
-void getAllTokens(FILE* code);
+Token* getAllTokens(FILE* code);
 
 void determineType(Token* token);
 

@@ -8,18 +8,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lexer.h"
+#include "parser.h"
 
-/**
- * Confirms whether the specified token is of the expected type, according to the grammar of Chao.
- */
-void expect(Token* token, TokenType type) {
 
-	if (token->type != type) {
-		printf("SYNTAX ERROR: %s was unexpected in the grammar\n", token->lexeme);
-		exit(-1);
-	}
+Token* frontToken;
 
-}
+Instruction* frontInstruction;
+
+
+
 
 
 /**
@@ -35,9 +32,14 @@ int main (int argc , const char* argv[]) {
 
 	FILE *code = fopen(argv[1], "r");
 
-	getAllTokens(code);
+	frontToken = getAllTokens(code);
 
+	frontInstruction = parseTokens(frontToken);
 
+	/*while (frontToken != NULL) {
+		printf("%s(end token)\n", frontToken->lexeme);
+		frontToken = frontToken->next;
+	}*/
 
 	fclose(code);
 
