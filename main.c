@@ -34,12 +34,14 @@ int main (int argc , const char* argv[]) {
 
 	frontToken = getAllTokens(code);
 
+	/*while (frontToken != NULL) {
+			printf("%s type: %d\n", frontToken->lexeme, frontToken->type);
+			frontToken = frontToken->next;
+	}*/
+
 	frontInstruction = parseTokens(frontToken);
 
-	/*while (frontToken != NULL) {
-		printf("%s(end token)\n", frontToken->lexeme);
-		frontToken = frontToken->next;
-	}*/
+
 
 	fclose(code);
 

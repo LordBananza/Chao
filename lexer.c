@@ -18,13 +18,21 @@ struct Token* head;
  * Based on the lexeme of the token, determines what type it must be
  */
 void determineType (Token* token) {
-	if (strcmp(token->lexeme, "int8") == 0) {
+	if (strcmp(token->lexeme, "int8") == 0 || strcmp(token->lexeme, "int8*") == 0) {
 		token->type = TYPE;
 		//printf("int8\n");
 		return;
 
+	} else if (strcmp(token->lexeme, "while") == 0) {
+		token->type = WHILE;
+		return;
+
 	} else if (strcmp(token->lexeme, "") == 0) {
 		token->type = END;
+		return;
+
+	} else if (strcmp(token->lexeme, "if") == 0) {
+		token->type = IF;
 		return;
 
 	} else if (strcmp(token->lexeme, "=") == 0) {
@@ -57,7 +65,7 @@ void determineType (Token* token) {
 		token->type = COMMA;
 		return;
 
-	} else if (strcmp(token->lexeme, "&&") == 0 || strcmp(token->lexeme, "||")) {
+	} else if (strcmp(token->lexeme, "&&") == 0 || strcmp(token->lexeme, "||") == 0) {
 		token->type = ANDOR;
 		return;
 
