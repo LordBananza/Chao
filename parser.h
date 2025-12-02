@@ -10,17 +10,22 @@
 
 #include "lexer.h"
 
-typedef enum Type {
+typedef struct IDName {
+	char name[1024];
+	struct IDName* next;
+}IDName;
+
+typedef enum InstructionType {
 	//These are all instructions supported by the VMU's architecture
 	ADD, ADDC, SUB, SUBC, INC, DEC, MUL, DIV, AND, OR, XOR, ROL, ROLC, ROR, RORC,
 	LD, ST, MOV, LDC, PUSH, POP, XCH, JMP, JMPF, BR, BRF, BZ, BNZ, BP, BPC, BN, DBNZ,
 	BE, BNE, CALL, CALLF, CALLR, RET, RETI, CLR1, SET1, NOT1, NOP
-}Type;
+}InstructionType;
 
 //Basic
 typedef struct Instruction {
 
-	Type type;
+	InstructionType type;
 
 	int op1;
 

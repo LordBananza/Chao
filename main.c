@@ -33,13 +33,15 @@ int main (int argc , const char* argv[]) {
 	FILE *code = fopen(argv[1], "r");
 
 	frontToken = getAllTokens(code);
+	
+	Token* head = frontToken;
 
-	/*while (frontToken != NULL) {
+	while (frontToken->next != NULL) {
 			printf("%s type: %d\n", frontToken->lexeme, frontToken->type);
 			frontToken = frontToken->next;
-	}*/
+	}
 
-	frontInstruction = parseTokens(frontToken);
+	frontInstruction = parseTokens(head);
 
 
 

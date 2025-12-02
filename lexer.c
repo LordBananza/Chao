@@ -18,7 +18,7 @@ struct Token* head;
  * Based on the lexeme of the token, determines what type it must be
  */
 void determineType (Token* token) {
-	if (strcmp(token->lexeme, "int8") == 0 || strcmp(token->lexeme, "int8*") == 0) {
+	if (strcmp(token->lexeme, "char") == 0 || strcmp(token->lexeme, "char*") == 0) {
 		token->type = TYPE;
 		//printf("int8\n");
 		return;
@@ -27,7 +27,7 @@ void determineType (Token* token) {
 		token->type = WHILE;
 		return;
 
-	} else if (strcmp(token->lexeme, "") == 0) {
+	} else if (strcmp(token->lexeme, "") == 0 || strcmp(token->lexeme, "\0") == 0) {
 		token->type = END;
 		return;
 
@@ -89,7 +89,7 @@ void determineType (Token* token) {
 
 	else {
 		token->type = ID;
-		//printf("ID\n");
+		//printf("ID with name %s\n", token->lexeme);
 		return;
 	}
 }
@@ -114,12 +114,15 @@ Token* getAllTokens(FILE *code) {
 		int i = 0;
 		int j = 0;
 
+
 		while (tracer != '\0') {
+		
+
 			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '~' || tracer == '\n') {
 
 
 				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|') {
-				//printf("%c\n", tracer);
+
 				determineType(currToken);
 				currToken->next = (Token*) malloc(sizeof(Token));
 				currToken = currToken->next;
@@ -159,6 +162,7 @@ Token* getAllTokens(FILE *code) {
 
 				++i;
 				tracer = line[i];
+				//printf("%d\n", tracer);
 
 				j = 0;
 
@@ -168,12 +172,15 @@ Token* getAllTokens(FILE *code) {
 				++i;
 				++j;
 				tracer = line[i];
+				//printf("%d\n", tracer);
 
 			}
 		}
+		
 		fgets(line, 1024, code);
 	}
-
+	
+	currToken->lexeme[0] = '\0';
 	determineType(currToken);
 
 	return head;

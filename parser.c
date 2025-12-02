@@ -6,12 +6,39 @@
  */
 #include <stdlib.h>
 #include "parser.h"
+#include <string.h>
 
 Instruction* node;
 
 Instruction* lead;
 
 Token* token;
+
+IDName* IDNames;
+
+//Checks to see if an ID is already in use elsewhere in the scope of the code
+char IDInUse(char* id) {
+	IDName* tracer = IDNames;
+	while (tracer != NULL) {
+		if (strcmp(tracer->name, id) == 0) {return 1;}
+		tracer = tracer->next;
+	}
+	return 0;
+
+}
+
+void addID(char* id) {
+	if (IDInUse(id) == 0) {
+		IDName* newID = (struct IDName*) malloc(sizeof(IDName));
+		strncpy(newID->name, token->lexeme, 1024);
+		newID->next = IDNames;
+		IDNames = newID;
+	} else {
+		printf("ERROR: variable name \"%s\" is used to name more than one variable/function\n", id);
+		exit(-1);
+	}
+}
+
 
 /**
  * Confirms whether the specified token is of the expected type, according to the grammar of Chao.
@@ -28,7 +55,7 @@ void expect(TokenType type) {
 	nextToken();
 
 	if (token->type != type) {
-		printf("SYNTAX ERROR: %s was unexpected in the grammar\n", token->lexeme);
+		printf("SYNTAX ERROR: %s of type %d was unexpected in the grammar. A token of type %d was expected\n", token->lexeme, token->type, type);
 		exit(-1);
 	} else {
 		//printf("succeeded expect check\n");
@@ -41,10 +68,8 @@ void expect(TokenType type) {
 /**
  * Looks ahead by n tokens to determine what the next token will be; useful for predicting the path of the parser
  */
-Type peek (int distance) {
+TokenType peek (int distance) {
 	Token* peeker = token;
-
-
 
 	for (int i = 0; i < distance; ++i) {
 		if (peeker == NULL) {
@@ -86,6 +111,7 @@ void parseArgument() {
 	expect(TYPE);
 
 	expect(ID);
+	addID(token->lexeme);
 }
 
 //TODO Store data for various instruction types
@@ -94,11 +120,13 @@ void parseDeclaration() {
 	expect(TYPE);
 
 	expect(ID);
+	addID(token->lexeme);
 
 	if (peek(1) == EQUAL) {
 		expect(EQUAL);
 
-		expect(NUM);
+		if (peek(1) == NUM) {expect(NUM);}
+		else {expect(ID);}
 
 		//printf("%s\n", token->lexeme);
 	}
@@ -245,9 +273,13 @@ void parseArgumentList() {
 
 void parseFunction() {
 	//printf("f\n");
+	//TODO Allow for scoping of variables by separating IDNames within each
+	// function/set of brackets from those outside of it
+	
 	expect(TYPE);
 
 	expect(ID);
+	addID(token->lexeme);
 
 	expect(LPAREN);
 
@@ -266,8 +298,9 @@ void parseFunction() {
 
 void parseFunctionList() {
 	//printf("fl\n");
-
-	parseFunction();
+	if (peek(3) == EQUAL) {parseDeclaration();}
+	else {parseFunction();}
+	
 	if (peek(1) == TYPE) {
 		parseFunctionList();
 	}
@@ -281,9 +314,12 @@ Instruction* parseTokens(Token* head) {
 
 	lead = (Instruction*) malloc(sizeof(Instruction));
 	node = lead;
+	
+	IDNames = (IDName*) malloc(sizeof(IDName));
 
-	//TODO Implement recursive parser after defining CFG
+	//printf("Start of parser\n");
 	parseFunctionList();
+	//printf("End of parser\n");
 	expect(END);
 
 	return lead;
