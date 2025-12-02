@@ -96,6 +96,10 @@ void parseInstructionList();
 
 void parseParameter() {
 	expect(ID);
+	if (IDInUse(token->lexeme) == 0) {
+		printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+		exit(-1);
+	}
 }
 
 void parseParameterList() {
@@ -126,7 +130,13 @@ void parseDeclaration() {
 		expect(EQUAL);
 
 		if (peek(1) == NUM) {expect(NUM);}
-		else {expect(ID);}
+		else {
+			expect(ID);
+			if (IDInUse(token->lexeme) == 0) {
+				printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+				exit(-1);
+			}
+		}
 
 		//printf("%s\n", token->lexeme);
 	}
@@ -141,6 +151,10 @@ void parseAssignment() {
 
 	if (peek(1) == ID) {
 		expect(ID);
+		if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+		}
 	} else {
 		expect(NUM);
 	}
@@ -154,6 +168,10 @@ void parseAssignment() {
 
 	if (peek(1) == ID) {
 		expect(ID);
+		if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+		}
 	} else {
 		expect(NUM);
 	}
@@ -163,6 +181,10 @@ void parseAssignment() {
 
 void parseCall() {
 	expect(ID);
+	if (IDInUse(token->lexeme) == 0) {
+		printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+		exit(-1);
+	}
 
 	expect(LPAREN);
 
@@ -180,6 +202,10 @@ void parseComp() {
 		expect(NUM);
 	} else {
 		expect(ID);
+		if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+		}
 	}
 
 	expect(OPC);
@@ -188,6 +214,10 @@ void parseComp() {
 		expect(NUM);
 	} else {
 		expect(ID);
+		if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+		}
 	}
 
 }
@@ -244,7 +274,6 @@ void parseInstruction() {
 		parseIf();
 	} else if (peek(1) == WHILE) {
 		parseWhile();
-	}
 }
 
 void parseInstructionList() {
@@ -280,7 +309,7 @@ void parseFunction() {
 
 	expect(ID);
 	addID(token->lexeme);
-
+	
 	expect(LPAREN);
 
 	parseArgumentList();
@@ -320,7 +349,8 @@ Instruction* parseTokens(Token* head) {
 	//printf("Start of parser\n");
 	parseFunctionList();
 	//printf("End of parser\n");
-	expect(END);
+	expect(END); 
+	
 
 	return lead;
 }
