@@ -12,8 +12,10 @@
 
 typedef struct IDName {
 	char name[1024];
+	int memAddress;
 	struct IDName* next;
 }IDName;
+
 
 typedef enum InstructionType {
 	//These are all instructions supported by the VMU's architecture

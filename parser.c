@@ -16,6 +16,44 @@ Token* token;
 
 IDName* IDNames;
 
+//0 = free; 1 = taken;
+char addresses[255];
+
+
+void freeMemory(char address, int size) {
+	for (int i = 0; i < size; ++i) {
+		addresses[address+i] = 0;
+	}
+}
+
+char findFreeMemory(int size) {
+	char ready = -1;
+	unsigned char start = 0;
+	int count = 0;
+	for (int i = 0; i < 255; ++i) {
+		if (ready == -1) {
+			if (addresses[i] == 0) {
+				printf("Found potential starting point at %d\n", i);
+				start = i;
+				ready = 1;
+				count = 1;
+				addresses[i] = 1;
+			}
+		} else {
+			if (count == size) {printf("Found free memory at address %d\n", start); return start;}
+			
+			if (addresses[i] == 0) {
+				++count;
+				addresses[i] = 1;
+				
+			} else {
+				count = 0;
+				ready = -1;
+			}
+		}
+	}
+}
+
 //Checks to see if an ID is already in use elsewhere in the scope of the code
 char IDInUse(char* id) {
 	IDName* tracer = IDNames;
@@ -261,6 +299,7 @@ void parseWhile() {
 void parseInstruction() {
 
 	//printf("i\n");
+	
 
 	if (peek(1) == TYPE) {
 		parseDeclaration();
@@ -274,6 +313,7 @@ void parseInstruction() {
 		parseIf();
 	} else if (peek(1) == WHILE) {
 		parseWhile();
+	}
 }
 
 void parseInstructionList() {
@@ -302,8 +342,10 @@ void parseArgumentList() {
 
 void parseFunction() {
 	//printf("f\n");
-	//TODO Allow for scoping of variables by separating IDNames within each
-	// function/set of brackets from those outside of it
+	
+	//Allows for scoping of variables by separating IDNames within each
+	//function/set of brackets from those outside of it
+	IDName* prevIDNames = IDNames;
 	
 	expect(TYPE);
 
@@ -321,6 +363,9 @@ void parseFunction() {
 	parseInstructionList();
 
 	expect(RBRACE);
+	
+	//Restore scope to previous condition
+	IDNames = prevIDNames;
 
 }
 
@@ -345,12 +390,14 @@ Instruction* parseTokens(Token* head) {
 	node = lead;
 	
 	IDNames = (IDName*) malloc(sizeof(IDName));
+	for (int i = 0; i < 255; ++i) {
+		addresses[i] = 0;
+	}
 
 	//printf("Start of parser\n");
 	parseFunctionList();
 	//printf("End of parser\n");
-	expect(END); 
-	
+	expect(END);
 
 	return lead;
 }
