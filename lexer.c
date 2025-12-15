@@ -61,6 +61,14 @@ void determineType (Token* token) {
 		token->type = RBRACE;
 		return;
 
+	}  else if (strcmp(token->lexeme, "[") == 0) {
+		token->type = LBRACKET;
+		return;
+
+	} else if (strcmp(token->lexeme, "]") == 0) {
+		token->type = RBRACKET;
+		return;
+
 	} else if (strcmp(token->lexeme, ",") == 0) {
 		token->type = COMMA;
 		return;
@@ -118,7 +126,7 @@ Token* getAllTokens(FILE *code) {
 		while (tracer != '\0') {
 		
 
-			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '~' || tracer == '\n') {
+			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '~' || tracer == '\n') {
 
 
 				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|') {
@@ -128,7 +136,7 @@ Token* getAllTokens(FILE *code) {
 				currToken = currToken->next;
 				}
 
-				if (tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',') {
+				if (tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' ) {
 					currToken->lexeme[0] = tracer;
 					determineType(currToken);
 					currToken->next = (Token*) malloc(sizeof(Token));

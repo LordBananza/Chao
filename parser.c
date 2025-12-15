@@ -65,10 +65,18 @@ char IDInUse(char* id) {
 
 }
 
-void addID(char* id) {
+void addID(char* id, char variable, char size) {
 	if (IDInUse(id) == 0) {
 		IDName* newID = (struct IDName*) malloc(sizeof(IDName));
-		strncpy(newID->name, token->lexeme, 1024);
+		strncpy(newID->name, id, 1024);
+		
+		if (variable == 1) {
+			newID->variable = 1;
+			newID->address = findFreeMemory(size);
+		}
+		
+		printf("Added new variable/function named \'%s\"\n", newID->name);
+		
 		newID->next = IDNames;
 		IDNames = newID;
 	} else {
@@ -153,7 +161,7 @@ void parseArgument() {
 	expect(TYPE);
 
 	expect(ID);
-	addID(token->lexeme);
+	addID(token->lexeme, 1, 1);
 }
 
 //TODO Store data for various instruction types
@@ -162,7 +170,6 @@ void parseDeclaration() {
 	expect(TYPE);
 
 	expect(ID);
-	addID(token->lexeme);
 
 	if (peek(1) == EQUAL) {
 		expect(EQUAL);
@@ -174,16 +181,54 @@ void parseDeclaration() {
 				printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 				exit(-1);
 			}
+			
 		}
+		
+		addID(token->lexeme, 1, 1);
 
 		//printf("%s\n", token->lexeme);
+	} else if (peek(1) == LBRACKET) {
+		char name[1024];
+		strncpy(name, token->lexeme, 1024);
+		//printf("%s %s\n", token->lexeme, name);
+	
+		expect(LBRACKET);
+		expect(NUM);
+		
+		addID(name, 1, atoi(token->lexeme));
+		
+		//printf("%s\n", token->lexeme);
+		//printf("%d\n", atoi(token->lexeme));
+		
+		expect(RBRACKET);
+	} else {
+		addID(token->lexeme, 1, 1);
 	}
 
 	expect(SEMICOLON);
 }
 
 void parseAssignment() {
+
 	expect(ID);
+	if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+	}
+	
+	if (peek(1) == LBRACKET) {
+		expect(LBRACKET);
+		if (peek(1) == NUM) {
+			expect(NUM);
+		} else if (peek(1) == ID) {
+			expect(ID);
+			if (IDInUse(token->lexeme) == 0) {
+				printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+				exit(-1);
+			}
+		}
+		expect(RBRACKET);
+	}
 
 	expect(EQUAL);
 
@@ -304,10 +349,10 @@ void parseInstruction() {
 	if (peek(1) == TYPE) {
 		parseDeclaration();
 	} else if (peek(1) == ID) {
-		if (peek(2) == EQUAL) {
-			parseAssignment();
-		} else if (peek(2) == LPAREN) {
+		if (peek(2) == LPAREN) {
 			parseCall();
+		} else {
+			parseAssignment();
 		}
 	} else if (peek(1) == IF) {
 		parseIf();
@@ -350,7 +395,7 @@ void parseFunction() {
 	expect(TYPE);
 
 	expect(ID);
-	addID(token->lexeme);
+	addID(token->lexeme, 0, 0);
 	
 	expect(LPAREN);
 

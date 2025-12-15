@@ -13,6 +13,8 @@
 typedef struct IDName {
 	char name[1024];
 	int memAddress;
+	char variable;
+	char address;
 	struct IDName* next;
 }IDName;
 
