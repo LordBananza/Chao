@@ -172,6 +172,9 @@ void parseDeclaration() {
 	expect(ID);
 
 	if (peek(1) == EQUAL) {
+	
+		addID(token->lexeme, 1, 1);
+		
 		expect(EQUAL);
 
 		if (peek(1) == NUM) {expect(NUM);}
@@ -184,7 +187,7 @@ void parseDeclaration() {
 			
 		}
 		
-		addID(token->lexeme, 1, 1);
+		
 
 		//printf("%s\n", token->lexeme);
 	} else if (peek(1) == LBRACKET) {
@@ -238,6 +241,19 @@ void parseAssignment() {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 			exit(-1);
 		}
+		if (peek(1) == LBRACKET) {
+			expect(LBRACKET);
+			if (peek(1) == NUM) {
+				expect(NUM);
+			} else if (peek(1) == ID) {
+				expect(ID);
+				if (IDInUse(token->lexeme) == 0) {
+					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+					exit(-1);
+				}
+			}
+			expect(RBRACKET);
+			}
 	} else {
 		expect(NUM);
 	}
@@ -268,6 +284,19 @@ void parseCall() {
 		printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 		exit(-1);
 	}
+	if (peek(1) == LBRACKET) {
+			expect(LBRACKET);
+			if (peek(1) == NUM) {
+				expect(NUM);
+			} else if (peek(1) == ID) {
+				expect(ID);
+				if (IDInUse(token->lexeme) == 0) {
+					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+					exit(-1);
+				}
+			}
+			expect(RBRACKET);
+			}
 
 	expect(LPAREN);
 
@@ -289,18 +318,47 @@ void parseComp() {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 			exit(-1);
 		}
+		if (peek(1) == LBRACKET) {
+			expect(LBRACKET);
+			if (peek(1) == NUM) {
+				expect(NUM);
+			} else if (peek(1) == ID) {
+				expect(ID);
+				if (IDInUse(token->lexeme) == 0) {
+					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+					exit(-1);
+				}
+			}
+			expect(RBRACKET);
+			}
 	}
 
+	if (peek(1) == OPC) {
 	expect(OPC);
 
 	if (peek(1) == NUM) {
 		expect(NUM);
 	} else {
+		printf("Here\n");
 		expect(ID);
 		if (IDInUse(token->lexeme) == 0) {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 			exit(-1);
 		}
+		if (peek(1) == LBRACKET) {
+			expect(LBRACKET);
+			if (peek(1) == NUM) {
+				expect(NUM);
+			} else if (peek(1) == ID) {
+				expect(ID);
+				if (IDInUse(token->lexeme) == 0) {
+					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+					exit(-1);
+				}
+			}
+			expect(RBRACKET);
+			}
+	}
 	}
 
 }
@@ -308,7 +366,8 @@ void parseComp() {
 void parseCompList() {
 	parseComp();
 
-	if (peek(1) == AND || peek(1) == OR) {
+	if (peek(1) == ANDOR) {
+		expect(ANDOR);
 		parseCompList();
 	}
 }
@@ -327,18 +386,28 @@ void parseIf() {
 	expect(RPAREN);
 
 	expect(LBRACE);
+	IDName* prevIDNames = IDNames;
 
 	parseInstructionList();
+	IDNames = prevIDNames;
 
 	expect(RBRACE);
 }
 
 void parseWhile() {
 	expect(WHILE);
-
 	expect(LPAREN);
 
 	parseCondition();
+	
+	expect(RPAREN);
+	expect(LBRACE);
+	IDName* prevIDNames = IDNames;
+	
+	parseInstructionList();
+	IDNames = prevIDNames;
+	
+	expect(RBRACE);
 }
 
 void parseInstruction() {

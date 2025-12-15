@@ -129,21 +129,21 @@ Token* getAllTokens(FILE *code) {
 			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '~' || tracer == '\n') {
 
 
-				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|') {
+				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=') {
 
 				determineType(currToken);
 				currToken->next = (Token*) malloc(sizeof(Token));
 				currToken = currToken->next;
 				}
 
-				if (tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' ) {
+				if (tracer == ';' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' ) {
 					currToken->lexeme[0] = tracer;
 					determineType(currToken);
 					currToken->next = (Token*) malloc(sizeof(Token));
 					currToken = currToken->next;
 
 
-				} else if (tracer == '&' || tracer == '|') {
+				} else if (tracer == '&' || tracer == '|' || tracer == '='|| tracer == '!') {
 
 					if (strcmp(currToken->lexeme, "&") == 0 && tracer == '&') {
 						currToken->lexeme[1] = '&';
@@ -151,6 +151,14 @@ Token* getAllTokens(FILE *code) {
 						//printf("there\n");
 					} else if (strcmp(currToken->lexeme, "|") == 0 && tracer == '|') {
 						currToken->lexeme[1] = '|';
+						j = 2;
+						//printf("everywhere\n");
+					} else if (strcmp(currToken->lexeme, "=") == 0 && tracer == '=') {
+						currToken->lexeme[1] = '=';
+						j = 2;
+						//printf("everywhere\n");
+					} else if (strcmp(currToken->lexeme, "!") == 0 && tracer == '=') {
+						currToken->lexeme[1] = '=';
 						j = 2;
 						//printf("everywhere\n");
 					} else {
