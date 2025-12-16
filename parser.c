@@ -100,6 +100,11 @@ void expect(TokenType type) {
 
 	nextToken();
 
+	if (token->type == COMMENTSTART) {
+		while (token->type != COMMENTEND) {nextToken();}
+		nextToken();
+	}
+
 	if (token->type != type) {
 		printf("SYNTAX ERROR: %s of type %d was unexpected in the grammar. A token of type %d was expected\n", token->lexeme, token->type, type);
 		exit(-1);
@@ -116,12 +121,15 @@ void expect(TokenType type) {
  */
 TokenType peek (int distance) {
 	Token* peeker = token;
-
+	
 	for (int i = 0; i < distance; ++i) {
-		if (peeker == NULL) {
-			return END;
-		}
 		peeker = peeker->next;
+		if (peeker->type == COMMENTSTART) {
+			while (peeker->type != COMMENTEND) {
+				peeker = peeker->next;
+			}
+			peeker = peeker->next;
+		}
 	}
 
 	if (peeker == NULL) {
@@ -453,7 +461,7 @@ void parseInstruction() {
 	} else if (peek(1) == ASM) {
 		parseASM();
 	} else {
-		printf("Unexpected instruction beginning here\n");
+		printf("Unexpected instruction beginning here: %s\n", token->next->lexeme);
 	}
 }
 

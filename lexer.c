@@ -23,8 +23,18 @@ void determineType (Token* token) {
 		//printf("int8\n");
 		return;
 
-	} if (strcmp(token->lexeme, "asm") == 0) {
+	} else if (strcmp(token->lexeme, "asm") == 0) {
 		token->type = ASM;
+		//printf("int8\n");
+		return;
+
+	} else if (strcmp(token->lexeme, "/*") == 0) {
+		token->type = COMMENTSTART;
+		//printf("int8\n");
+		return;
+
+	} else if (strcmp(token->lexeme, "*/") == 0) {
+		token->type = COMMENTEND;
 		//printf("int8\n");
 		return;
 
@@ -131,10 +141,10 @@ Token* getAllTokens(FILE *code) {
 		while (tracer != '\0') {
 		
 
-			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '~' || tracer == '\n') {
+			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '/' || tracer == '*' || tracer == '^' || tracer == '~' || tracer == '\n') {
 
 
-				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=') {
+				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=' && tracer != '/' && tracer != '*') {
 
 				determineType(currToken);
 				currToken->next = (Token*) malloc(sizeof(Token));
@@ -148,7 +158,7 @@ Token* getAllTokens(FILE *code) {
 					currToken = currToken->next;
 
 
-				} else if (tracer == '&' || tracer == '|' || tracer == '='|| tracer == '!') {
+				} else if (tracer == '&' || tracer == '|' || tracer == '='|| tracer == '!' || tracer == '/' || tracer == '*') {
 
 					if (strcmp(currToken->lexeme, "&") == 0 && tracer == '&') {
 						currToken->lexeme[1] = '&';
@@ -164,6 +174,16 @@ Token* getAllTokens(FILE *code) {
 						//printf("everywhere\n");
 					} else if (strcmp(currToken->lexeme, "!") == 0 && tracer == '=') {
 						currToken->lexeme[1] = '=';
+						j = 2;
+						//printf("everywhere\n");
+					} else if (strcmp(currToken->lexeme, "/") == 0 && tracer == '*') {
+						printf("Here\n");
+						currToken->lexeme[1] = '*';
+						j = 2;
+						//printf("everywhere\n");
+					} else if (strcmp(currToken->lexeme, "*") == 0 && tracer == '/') {
+						printf("Here2\n");
+						currToken->lexeme[1] = '/';
 						j = 2;
 						//printf("everywhere\n");
 					} else {
