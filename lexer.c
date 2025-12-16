@@ -23,6 +23,11 @@ void determineType (Token* token) {
 		//printf("int8\n");
 		return;
 
+	} if (strcmp(token->lexeme, "asm") == 0) {
+		token->type = ASM;
+		//printf("int8\n");
+		return;
+
 	} else if (strcmp(token->lexeme, "while") == 0) {
 		token->type = WHILE;
 		return;

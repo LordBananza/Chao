@@ -410,6 +410,29 @@ void parseWhile() {
 	expect(RBRACE);
 }
 
+void parseASM() {
+	expect(ASM);
+	
+	expect(LPAREN);
+	
+	//Instruction
+	expect(ID);
+	
+	if (peek(1) == EQUAL) {
+		expect(EQUAL);
+		
+		expect(ID);
+	} else {
+		while (peek(1) != RPAREN) {
+			expect(ID);
+		}
+	}
+	
+	expect(RPAREN);
+	
+	expect(SEMICOLON);
+}
+
 void parseInstruction() {
 
 	//printf("i\n");
@@ -427,6 +450,10 @@ void parseInstruction() {
 		parseIf();
 	} else if (peek(1) == WHILE) {
 		parseWhile();
+	} else if (peek(1) == ASM) {
+		parseASM();
+	} else {
+		printf("Unexpected instruction beginning here\n");
 	}
 }
 
@@ -435,7 +462,7 @@ void parseInstructionList() {
 
 	parseInstruction();
 
-	if (peek(1) == ID || peek(1) == TYPE || peek(1) == IF || peek(1) == WHILE) {
+	if (peek(1) == ID || peek(1) == TYPE || peek(1) == IF || peek(1) == WHILE || peek(1) == ASM) {
 		parseInstructionList();
 	}
 }
