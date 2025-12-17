@@ -142,7 +142,7 @@ Token* getAllTokens(FILE *code) {
 		while (tracer != '\0') {
 		
 
-			if (tracer == ' ' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '/' || tracer == '*' || tracer == '~' || tracer == '\n') {
+			if (tracer == ' ' || tracer == '\t' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '/' || tracer == '*' || tracer == '~' || tracer == '\n') {
 
 
 				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=') {
