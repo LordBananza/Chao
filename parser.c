@@ -100,10 +100,13 @@ void expect(TokenType type) {
 
 	nextToken();
 
-	if (token->type == COMMENTSTART) {
-		while (token->type != COMMENTEND) {nextToken();}
-		nextToken();
-	}
+	if (token->type == SLASH) {
+		token = token->next;
+			while (token->type != SLASH) {
+				token = token->next;
+			}
+			token = token->next;
+		}
 
 	if (token->type != type) {
 		printf("SYNTAX ERROR: %s of type %d was unexpected in the grammar. A token of type %d was expected\n", token->lexeme, token->type, type);
@@ -124,8 +127,9 @@ TokenType peek (int distance) {
 	
 	for (int i = 0; i < distance; ++i) {
 		peeker = peeker->next;
-		if (peeker->type == COMMENTSTART) {
-			while (peeker->type != COMMENTEND) {
+		if (peeker->type == SLASH) {
+			peeker = peeker->next;
+			while (peeker->type != SLASH) {
 				peeker = peeker->next;
 			}
 			peeker = peeker->next;
