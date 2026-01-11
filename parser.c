@@ -12,6 +12,8 @@ Instruction* node;
 
 Instruction* lead;
 
+int tabCount;
+
 Token* token;
 
 IDName* IDNames;
@@ -52,6 +54,30 @@ char findFreeMemory(int size) {
 			}
 		}
 	}
+}
+
+IDName* findID (char* ID) {
+	IDName* tracer = IDNames;
+	
+	while (tracer != NULL) {
+		if (strcmp(tracer->name, ID) == 0) {return tracer;}
+		tracer = tracer->next;
+	}
+	
+	return NULL;
+}
+
+
+void newNode() {
+	node->next = (Instruction*) malloc(sizeof(Instruction));
+	node = node->next;
+}
+
+char* getOp(char* header, int headerSize, char* string) {
+	char* op = (char*) malloc(sizeof(char)*1024);
+	strncpy(op, header, 1024);
+	strncpy(op + headerSize, string, 1024);
+	return op;
 }
 
 
@@ -185,13 +211,33 @@ void parseDeclaration() {
 	expect(ID);
 
 	if (peek(1) == EQUAL) {
-	
 		addID(token->lexeme, 1, 1);
+		IDName* id = findID(token->lexeme);
 		
 		expect(EQUAL);
 
-		if (peek(1) == NUM) {expect(NUM);}
-		else {
+		if (peek(1) == NUM) {
+			expect(NUM);
+			
+			node->type = "and";
+			node->op1 = "#0";
+			node->tabCount = tabCount;
+			newNode();
+			
+			node->type = "add";
+			node->tabCount = tabCount;
+			node->op1 = getOp("#", 1, token->lexeme);
+			newNode();
+			
+			node->type = "st";
+			char addr[3];
+			int ad = (int) id->address;
+			sprintf(addr, "%d", ad);
+			node->op1 = getOp("#$", 2, addr);
+			node->tabCount = tabCount;
+			newNode();
+			
+		} else {
 			expect(ID);
 			if (IDInUse(token->lexeme) == 0) {
 				printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
@@ -430,16 +476,19 @@ void parseASM() {
 	
 	//Instruction
 	expect(ID);
+	node->type = token->lexeme;
+	node->tabCount = tabCount;
 	
 	if (peek(1) == EQUAL) {
 		expect(EQUAL);
+		node->op1 = token->lexeme;
 		
 		expect(ID);
+		node->op2 = token->lexeme;
 		
 	} else if (strcmp(token->lexeme, ".org") == 0) {
-	
+		node->tabCount = 0;
 	} else {
-		strncpy(node->type, token->lexeme, 5);
 		int currentOp = 1;
 		while (peek(1) != RPAREN) {
 			expect(ID);
@@ -522,6 +571,12 @@ void parseFunction() {
 
 	expect(ID);
 	addID(token->lexeme, 0, 0);
+	node->type = strcat(token->lexeme, ":");
+	node->tabCount = 0;
+	tabCount = 1;
+	
+	node->next = (Instruction*) malloc(sizeof(Instruction));
+	node = node->next;
 	
 	expect(LPAREN);
 
@@ -535,6 +590,9 @@ void parseFunction() {
 
 	expect(RBRACE);
 	
+	node->next = (Instruction*) malloc(sizeof(Instruction));
+	node = node->next;
+	
 	//Restore scope to previous condition
 	IDNames = prevIDNames;
 
@@ -543,7 +601,7 @@ void parseFunction() {
 
 void parseFunctionList() {
 	//printf("fl\n");
-	if (peek(3) == EQUAL) {parseDeclaration();}
+	if (peek(3) == SEMICOLON) {parseDeclaration();}
 	else {parseFunction();}
 	
 	if (peek(1) == TYPE) {
@@ -559,6 +617,8 @@ Instruction* parseTokens(Token* head) {
 
 	lead = (Instruction*) malloc(sizeof(Instruction));
 	node = lead;
+	
+	tabCount = 0;
 	
 	IDNames = (IDName*) malloc(sizeof(IDName));
 	for (int i = 0; i < 255; ++i) {

@@ -29,7 +29,9 @@ typedef enum InstructionType {
 //Basic
 typedef struct Instruction {
 
-	char type[5];
+	int tabCount;
+
+	char* type;
 
 	char* op1;
 
