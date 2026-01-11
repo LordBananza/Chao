@@ -446,7 +446,7 @@ void parseASM() {
 			if(currentOp == 1) {
 				node->op1 = token->lexeme;
 				++currentOp;
-			} else if(currentOp == 1) {
+			} else if(currentOp == 2) {
 				node->op2 = token->lexeme;
 				++currentOp;
 			} else {
