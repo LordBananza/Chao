@@ -54,6 +54,7 @@ char findFreeMemory(int size) {
 	}
 }
 
+
 //Checks to see if an ID is already in use elsewhere in the scope of the code
 char IDInUse(char* id) {
 	IDName* tracer = IDNames;
@@ -434,13 +435,30 @@ void parseASM() {
 		expect(EQUAL);
 		
 		expect(ID);
+		
+	} else if (strcmp(token->lexeme, ".org") == 0) {
+	
 	} else {
+		strncpy(node->type, token->lexeme, 5);
+		int currentOp = 1;
 		while (peek(1) != RPAREN) {
 			expect(ID);
+			if(currentOp == 1) {
+				node->op1 = token->lexeme;
+				++currentOp;
+			} else if(currentOp == 1) {
+				node->op2 = token->lexeme;
+				++currentOp;
+			} else {
+				node->op3 = token->lexeme;
+			}
 		}
 	}
 	
 	expect(RPAREN);
+	
+	node->next = (Instruction*) malloc(sizeof(Instruction));
+	node = node->next;
 	
 	expect(SEMICOLON);
 }

@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "lexer.h"
 #include "parser.h"
 
@@ -24,7 +25,7 @@ Instruction* frontInstruction;
  * which are then given meaning by a parser. The parser then generates an output file of standard VMS assembly code.
  * If you are looking to write your own Chao code, check README.md on the Chao Github page:
  */
-int main (int argc , const char* argv[]) {
+int main (int argc , char* argv[]) {
 	if (argc != 2) {
 		printf("ERROR: please specify only the file to be compiled\n");
 		exit(-1);
@@ -40,10 +41,34 @@ int main (int argc , const char* argv[]) {
 			printf("%s type: %d\n", frontToken->lexeme, frontToken->type);
 			frontToken = frontToken->next;
 	}
+	
+	printf("\n\n");
 
+	
+	
 	frontInstruction = parseTokens(head);
-
-
+	
+	FILE *output = fopen(strcat(argv[1], ".s"), "w");
+	
+	int count = 1;
+	while (frontInstruction->next != NULL) {
+			printf("Instruction #%d: %s %s %s %s\n", count++, frontInstruction->type, frontInstruction->op1, frontInstruction->op2, frontInstruction->op3);
+			
+			fprintf(output, "%s", frontInstruction->type);
+			
+			if (frontInstruction->op1 != NULL) {
+				fprintf(output, " %s", frontInstruction->op1);
+			}
+			if (frontInstruction->op2 != NULL) {
+				fprintf(output, " %s", frontInstruction->op2);
+			}
+			if (frontInstruction->op3 != NULL) {
+				fprintf(output, " %s", frontInstruction->op3);
+			}
+			fprintf(output, "\n");
+			
+			frontInstruction = frontInstruction->next;
+	}
 
 	fclose(code);
 

@@ -29,13 +29,13 @@ typedef enum InstructionType {
 //Basic
 typedef struct Instruction {
 
-	InstructionType type;
+	char type[5];
 
-	int op1;
+	char* op1;
 
-	int op2;
+	char* op2;
 
-	int destination;
+	char* op3;
 
 	struct Instruction* target;
 
