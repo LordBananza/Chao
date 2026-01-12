@@ -16,6 +16,7 @@ typedef struct IDName {
 	char variable;
 	char address;
 	struct IDName* next;
+	struct IDName* arguments;
 }IDName;
 
 

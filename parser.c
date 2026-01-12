@@ -18,6 +18,8 @@ Token* token;
 
 IDName* IDNames;
 
+IDName* parameters;
+
 //0 = free; 1 = taken;
 char addresses[255];
 
@@ -170,6 +172,24 @@ TokenType peek (int distance) {
 
 }
 
+void pushParameters() {
+	IDName* tracer = parameters;
+	
+	while (tracer != NULL) {
+		node->type = "push";
+		node->tabCount = tabCount;
+		char addr[3];
+		int ad = (int) tracer->address;
+		sprintf(addr, "%d", ad);
+		
+		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address);
+		
+		node->op1 = getOp("$", 1, addr);
+		newNode();
+	
+		tracer = tracer->next;
+	}
+}
 
 
 //Parsing Functions for every item in the CFG
@@ -181,16 +201,36 @@ void parseInstructionList();
 
 void parseParameter() {
 	expect(ID);
+	
 	if (IDInUse(token->lexeme) == 0) {
 		printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 		exit(-1);
 	}
+	char name[1024];
+	strncpy(name, token->lexeme, 1024);
+	
+	if (peek(1) == LBRACKET) {
+		
+		//printf("%s %s\n", token->lexeme, name);
+	
+		expect(LBRACKET);
+		expect(NUM);
+		
+		
+		expect(RBRACKET);
+	}
+	
+	IDName* id = findID(name);
+	
+	id->next = parameters;
+	parameters = id;
 }
 
 void parseParameterList() {
+	
 	parseParameter();
 
-	if (peek(1) == ID) {
+	if (peek(1) == COMMA) {
 		expect(COMMA);
 		parseParameterList();
 	}
@@ -200,7 +240,16 @@ void parseArgument() {
 	expect(TYPE);
 
 	expect(ID);
+	
 	addID(token->lexeme, 1, 1);
+	
+	node->type = "pop";
+	node->tabCount = tabCount;
+	char addr[3];
+	int ad = (int) findID(token->lexeme)->address;
+	sprintf(addr, "%d", ad);		
+	node->op1 = getOp("#$", 2, addr);
+	newNode();
 }
 
 //TODO Store data for various instruction types
@@ -339,6 +388,10 @@ void parseAssignment() {
 
 void parseCall() {
 	expect(ID);
+	
+	char* name;
+	strncpy(name, token->lexeme, 1024);
+	
 	if (IDInUse(token->lexeme) == 0) {
 		printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 		exit(-1);
@@ -360,7 +413,15 @@ void parseCall() {
 	expect(LPAREN);
 
 	if (peek(1) != RPAREN) {
+		parameters = NULL;
 		parseParameterList();
+		
+		pushParameters();
+		
+		node->type = "call";
+		node->tabCount = tabCount;
+		node->op1 = name;
+		newNode();
 	}
 
 	expect(RPAREN);
