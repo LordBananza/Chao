@@ -248,7 +248,7 @@ void parseArgument() {
 	char addr[3];
 	int ad = (int) findID(token->lexeme)->address;
 	sprintf(addr, "%d", ad);		
-	node->op1 = getOp("#$", 2, addr);
+	node->op1 = getOp("$", 1, addr);
 	newNode();
 }
 
@@ -282,7 +282,7 @@ void parseDeclaration() {
 			char addr[3];
 			int ad = (int) id->address;
 			sprintf(addr, "%d", ad);
-			node->op1 = getOp("#$", 2, addr);
+			node->op1 = getOp("$", 1, addr);
 			node->tabCount = tabCount;
 			newNode();
 			
@@ -327,10 +327,15 @@ void parseAssignment() {
 			exit(-1);
 	}
 	
+	int destination = (int) findID(token->lexeme)->address;
+	
 	if (peek(1) == LBRACKET) {
 		expect(LBRACKET);
 		if (peek(1) == NUM) {
+		
 			expect(NUM);
+			destination += atoi(token->lexeme);
+			
 		} else if (peek(1) == ID) {
 			expect(ID);
 			if (IDInUse(token->lexeme) == 0) {
@@ -345,6 +350,9 @@ void parseAssignment() {
 
 	if (peek(1) == ID) {
 		expect(ID);
+		
+		int address = (int) findID(token->lexeme)->address;
+		
 		if (IDInUse(token->lexeme) == 0) {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 			exit(-1);
@@ -353,6 +361,21 @@ void parseAssignment() {
 			expect(LBRACKET);
 			if (peek(1) == NUM) {
 				expect(NUM);
+				
+				address += atoi(token->lexeme);
+				
+				node->type = "and";
+				node->tabCount = tabCount;
+				node->op1 = "#0";
+				newNode();
+			
+				node->type = "add";
+				node->tabCount = tabCount;
+				char addr[4];
+				sprintf(addr, "%d", address);
+				node->op1 = getOp("#$", 2, addr);
+				newNode();
+					
 			} else if (peek(1) == ID) {
 				expect(ID);
 				if (IDInUse(token->lexeme) == 0) {
@@ -364,10 +387,30 @@ void parseAssignment() {
 			}
 	} else {
 		expect(NUM);
+		
+		node->type = "and";
+		node->tabCount = tabCount;
+		node->op1 = "#0";
+		newNode();
+			
+		node->type = "add";
+		node->tabCount = tabCount;
+		node->op1 = getOp("#", 1, token->lexeme);
+		newNode();
+			 
 	}
 
 	if (peek(1) == SEMICOLON) {
+	
 		expect(SEMICOLON);
+		
+		node->type = "st";
+		node->tabCount = tabCount;
+		char dest[4];
+		sprintf(dest, "%d", destination);
+		node->op1 = getOp("$", 1, dest);
+		newNode();
+		
 		return;
 	}
 
@@ -382,6 +425,13 @@ void parseAssignment() {
 	} else {
 		expect(NUM);
 	}
+	
+	node->type = "st";
+	node->tabCount = tabCount;
+	char dest[4];
+	sprintf(dest, "%d", destination);
+	node->op1 = getOp("$", 1, dest);
+	newNode();
 
 	expect(SEMICOLON);
 }
