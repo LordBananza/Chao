@@ -23,6 +23,11 @@ IDName* parameters;
 //0 = free; 1 = taken;
 char addresses[255];
 
+char* getAddressString(char address) {
+	char* addr = (char*) malloc(4);
+	sprintf(addr, "%d", address);
+	return addr;
+}
 
 void freeMemory(char address, int size) {
 	for (int i = 0; i < size; ++i) {
@@ -268,21 +273,13 @@ void parseDeclaration() {
 		if (peek(1) == NUM) {
 			expect(NUM);
 			
-			node->type = "and";
-			node->op1 = "#0";
-			node->tabCount = tabCount;
-			newNode();
-			
-			node->type = "add";
+			node->type = "mv";
 			node->tabCount = tabCount;
 			node->op1 = getOp("#", 1, token->lexeme);
 			newNode();
 			
 			node->type = "st";
-			char addr[3];
-			int ad = (int) id->address;
-			sprintf(addr, "%d", ad);
-			node->op1 = getOp("$", 1, addr);
+			node->op1 = getOp("$", 1, getAddressString(id->address));
 			node->tabCount = tabCount;
 			newNode();
 			
@@ -363,17 +360,10 @@ void parseAssignment() {
 				expect(NUM);
 				
 				address += atoi(token->lexeme);
-				
-				node->type = "and";
-				node->tabCount = tabCount;
-				node->op1 = "#0";
-				newNode();
 			
-				node->type = "add";
+				node->type = "mv";
 				node->tabCount = tabCount;
-				char addr[4];
-				sprintf(addr, "%d", address);
-				node->op1 = getOp("#$", 2, addr);
+				node->op1 = getOp("#$", 2, getAddressString(address));
 				newNode();
 					
 			} else if (peek(1) == ID) {
@@ -388,12 +378,8 @@ void parseAssignment() {
 	} else {
 		expect(NUM);
 		
-		node->type = "and";
-		node->tabCount = tabCount;
-		node->op1 = "#0";
-		newNode();
 			
-		node->type = "add";
+		node->type = "mv";
 		node->tabCount = tabCount;
 		node->op1 = getOp("#", 1, token->lexeme);
 		newNode();
