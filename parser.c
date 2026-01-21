@@ -183,13 +183,9 @@ void pushParameters() {
 	while (tracer != NULL) {
 		node->type = "push";
 		node->tabCount = tabCount;
-		char addr[3];
-		int ad = (int) tracer->address;
-		sprintf(addr, "%d", ad);
-		
 		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address);
 		
-		node->op1 = getOp("$", 1, addr);
+		node->op1 = getOp("#$", 2, getAddressString(tracer->address));
 		newNode();
 	
 		tracer = tracer->next;
@@ -662,12 +658,13 @@ void parseFunction() {
 	
 	//Allows for scoping of variables by separating IDNames within each
 	//function/set of brackets from those outside of it
-	IDName* prevIDNames = IDNames;
 	
 	expect(TYPE);
 
 	expect(ID);
 	addID(token->lexeme, 0, 0);
+	IDName* prevIDNames = IDNames;
+	
 	node->type = strcat(token->lexeme, ":");
 	node->tabCount = 0;
 	tabCount = 1;
