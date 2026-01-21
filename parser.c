@@ -633,9 +633,24 @@ void parseReturn() {
 	if (peek(1) == NUM) {
 		expect(NUM);
 		
+		node->type = "mov";
+		node->tabCount = tabCount;
+		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+		node->op2 = "acc";
+		newNode();
+		
+		node->type = "push";
+		node->tabCount = tabCount;
+		node->op1 = "acc";
+		newNode();
+		
 		
 	} else if (peek(1) == ID) {
 		expect(ID);
+		
+		int address = (int) findID(token->lexeme)->address;
+		
+		//TODO finish getting address of variable;
 		
 		if (peek(1) == LBRACKET) {
 			expect(LBRACKET);

@@ -1,0 +1,14 @@
+char main() {
+/* test comment */
+	char xyzw = 0;
+	char arr[24];
+	char arr2[30];
+	arr2[25] = 50;
+	arr[xyzw] = arr2[25];
+	if (arr[xyzw] == 50 && xyzw == 0) {
+		xyzw = 2;
+		asm(jmp point);
+		char x = 5;
+	}
+	x = x + 5;
+}
