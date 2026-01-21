@@ -185,7 +185,7 @@ void pushParameters() {
 		node->tabCount = tabCount;
 		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address);
 		
-		node->op1 = getOp("#$", 2, getAddressString(tracer->address));
+		node->op1 = getOp("$", 1, getAddressString(tracer->address));
 		newNode();
 	
 		tracer = tracer->next;
@@ -269,9 +269,10 @@ void parseDeclaration() {
 		if (peek(1) == NUM) {
 			expect(NUM);
 			
-			node->type = "mv";
+			node->type = "mov";
 			node->tabCount = tabCount;
-			node->op1 = getOp("#", 1, token->lexeme);
+			node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+			node->op2 = "acc";
 			newNode();
 			
 			node->type = "st";
@@ -320,6 +321,7 @@ void parseAssignment() {
 			exit(-1);
 	}
 	
+	//Stores where in memory the result will go
 	int destination = (int) findID(token->lexeme)->address;
 	
 	if (peek(1) == LBRACKET) {
@@ -356,11 +358,6 @@ void parseAssignment() {
 				expect(NUM);
 				
 				address += atoi(token->lexeme);
-			
-				node->type = "mv";
-				node->tabCount = tabCount;
-				node->op1 = getOp("#$", 2, getAddressString(address));
-				newNode();
 					
 			} else if (peek(1) == ID) {
 				expect(ID);
@@ -368,16 +365,27 @@ void parseAssignment() {
 					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 					exit(-1);
 				}
+				
+				//TODO obtain value from the variable, then store it elsewhere to get the value out of the array
+				
 			}
 			expect(RBRACKET);
 			}
+			
+			node->type = "mov";
+			node->tabCount = tabCount;
+			node->op1 = strcat(getOp("#$", 2, getAddressString(address)), ",");
+			node->op2 = "acc";
+			newNode();
+			
 	} else {
 		expect(NUM);
 		
 			
-		node->type = "mv";
+		node->type = "mov";
 		node->tabCount = tabCount;
-		node->op1 = getOp("#", 1, token->lexeme);
+		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+		node->op2 = "acc";
 		newNode();
 			 
 	}
@@ -397,6 +405,16 @@ void parseAssignment() {
 	}
 
 	expect(OPERATOR);
+	
+	//Addition
+	if (strcmp(token->lexeme, "+") == 0) {
+		node->type = "add";
+	
+	//Subtraction
+	} else if (strcmp(token->lexeme, "-") == 0) {
+		node->type = "sub";
+	}
+	
 
 	if (peek(1) == ID) {
 		expect(ID);
@@ -406,6 +424,10 @@ void parseAssignment() {
 		}
 	} else {
 		expect(NUM);
+		
+		node->tabCount = tabCount;
+		node->op1 = token->lexeme;
+		newNode();
 	}
 	
 	node->type = "st";
@@ -605,6 +627,30 @@ void parseASM() {
 	expect(SEMICOLON);
 }
 
+void parseReturn() {
+	expect(RETURN);
+	
+	if (peek(1) == NUM) {
+		expect(NUM);
+		
+		
+	} else if (peek(1) == ID) {
+		expect(ID);
+		
+		if (peek(1) == LBRACKET) {
+			expect(LBRACKET);
+			expect(NUM);
+			expect(RBRACKET);
+		}
+	}
+	
+	node->type = "ret";
+	node->tabCount = tabCount;
+	newNode();
+	
+	expect(SEMICOLON);
+}
+
 void parseInstruction() {
 
 	//printf("i\n");
@@ -624,6 +670,8 @@ void parseInstruction() {
 		parseWhile();
 	} else if (peek(1) == ASM) {
 		parseASM();
+	} else if (peek(1) == RETURN) {
+		parseReturn();
 	} else {
 		printf("Unexpected instruction beginning here: %s\n", token->next->lexeme);
 	}
@@ -636,6 +684,9 @@ void parseInstructionList() {
 
 	if (peek(1) == ID || peek(1) == TYPE || peek(1) == IF || peek(1) == WHILE || peek(1) == ASM) {
 		parseInstructionList();
+	} else if (peek(1) == RETURN) {
+		parseReturn();
+		return;
 	}
 }
 

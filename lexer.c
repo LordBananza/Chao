@@ -19,7 +19,7 @@ struct Token* head;
  */
 void determineType (Token* token) {
 	//printf("currToken = %s\n", token->lexeme);
-	if (strcmp(token->lexeme, "char") == 0 || strcmp(token->lexeme, "char*") == 0) {
+	if (strcmp(token->lexeme, "char") == 0 || strcmp(token->lexeme, "char*") == 0 || strcmp (token->lexeme, "void") == 0) {
 		token->type = TYPE;
 		//printf("int8\n");
 		return;
@@ -51,6 +51,10 @@ void determineType (Token* token) {
 		token->type = IF;
 		return;
 
+	} else if (strcmp(token->lexeme, "return") == 0) {
+		token->type = RETURN;
+		return;
+	
 	} else if (strcmp(token->lexeme, "=") == 0) {
 		//printf("equal\n");
 		token->type = EQUAL;
