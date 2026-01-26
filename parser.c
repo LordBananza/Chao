@@ -190,7 +190,7 @@ void pushParameters() {
 		node->tabCount = tabCount;
 		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address);
 		
-		node->op1 = getOp("$", 1, getAddressString(tracer->address));
+		node->op1 = getOp("$", 1, getAddressString(tracer->address + tracer->index));
 		newNode();
 	
 		tracer = tracer->next;
@@ -206,6 +206,9 @@ void parseFunctionList();
 void parseInstructionList();
 
 void parseParameter() {
+
+	char offset = 0;
+
 	expect(ID);
 	
 	if (IDInUse(token->lexeme) == 0) {
@@ -222,6 +225,7 @@ void parseParameter() {
 		expect(LBRACKET);
 		expect(NUM);
 		
+		offset = (char) atoi(token->lexeme);
 		
 		expect(RBRACKET);
 	}
@@ -229,6 +233,7 @@ void parseParameter() {
 	IDName* id = findID(name);
 	
 	id->next = parameters;
+	id->index = offset;
 	parameters = id;
 }
 
