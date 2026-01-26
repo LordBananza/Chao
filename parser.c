@@ -134,12 +134,14 @@ void expect(TokenType type) {
 
 	nextToken();
 
-	if (token->type == SLASH) {
+	if (token->type == SLASH && token->next->type == STAR) {
 		token = token->next;
 			while (token->type != SLASH) {
 				token = token->next;
+				//printf("%d\n", token->type);
 			}
 			token = token->next;
+			//printf("%d\n", token->type);
 		}
 
 	if (token->type != type) {
@@ -161,12 +163,15 @@ TokenType peek (int distance) {
 	
 	for (int i = 0; i < distance; ++i) {
 		peeker = peeker->next;
-		if (peeker->type == SLASH) {
+		if (peeker->type == SLASH && peeker->next->type == STAR) {
 			peeker = peeker->next;
 			while (peeker->type != SLASH) {
 				peeker = peeker->next;
+				//printf("%d\n", peeker->type);
 			}
 			peeker = peeker->next;
+			//printf("%d (End of Peek)\n", peeker->type);
+			
 		}
 	}
 
@@ -315,6 +320,8 @@ void parseDeclaration() {
 
 void parseAssignment() {
 
+	char mulOrDiv = 0;
+
 	expect(ID);
 	if (IDInUse(token->lexeme) == 0) {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
@@ -404,6 +411,8 @@ void parseAssignment() {
 		return;
 	}
 
+	if (peek(1) == OPERATOR) {
+
 	expect(OPERATOR);
 	
 	//Addition
@@ -415,6 +424,20 @@ void parseAssignment() {
 		node->type = "sub";
 	}
 	
+	//TODO Put operands into ACC and C (first value) then B for second value
+	} else if (peek(1) == STAR) {
+		printf("\nStar\n\n");
+		
+		expect(STAR);
+		mulOrDiv = 1;
+		
+		
+	} else if (peek(1) == SLASH) {
+		printf("\nSlash\n\n");
+		
+		expect(SLASH);
+		mulOrDiv = 2;
+	}
 
 	if (peek(1) == ID) {
 		expect(ID);
@@ -426,8 +449,34 @@ void parseAssignment() {
 		expect(NUM);
 		
 		node->tabCount = tabCount;
-		node->op1 = token->lexeme;
+		node->op1 = getOp("#", 1, token->lexeme);
+		
+		
+		if (mulOrDiv == 0) {newNode();}
+	}
+	
+	
+	if (mulOrDiv != 0) {
+		node->type = "mov";
+		node->tabCount = tabCount;
+		node->op1 = strcat(node->op1, ",");
+		node->op2 = "b";
 		newNode();
+		
+		if (mulOrDiv == 1) {
+			node->type = "mul";
+		} else {
+			node->type = "div";
+		}
+		node->tabCount = tabCount;
+		newNode();
+		
+		node->type = "ld";
+		node->tabCount = tabCount;
+		node->op1 = "b";
+		newNode();
+		
+		
 	}
 	
 	node->type = "st";
@@ -747,7 +796,6 @@ void parseFunction() {
 	expect(LBRACE);
 
 	parseInstructionList();
-
 	expect(RBRACE);
 	
 	node->next = (Instruction*) malloc(sizeof(Instruction));
