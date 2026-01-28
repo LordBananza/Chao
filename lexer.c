@@ -55,6 +55,10 @@ void determineType (Token* token) {
 		token->type = RETURN;
 		return;
 	
+	} else if (strcmp(token->lexeme, "include") == 0) {
+		token->type = INCLUDE;
+		return;
+	
 	} else if (strcmp(token->lexeme, "=") == 0) {
 		//printf("equal\n");
 		token->type = EQUAL;
@@ -93,6 +97,14 @@ void determineType (Token* token) {
 		token->type = COMMA;
 		return;
 
+	} else if (strcmp(token->lexeme, "#") == 0) {
+		token->type = POUND;
+		return;
+
+	} else if (strcmp(token->lexeme, "\"") == 0) {
+		token->type = QUOTE;
+		return;
+
 	} else if (strcmp(token->lexeme, "&&") == 0 || strcmp(token->lexeme, "||") == 0) {
 		token->type = ANDOR;
 		return;
@@ -109,7 +121,7 @@ void determineType (Token* token) {
 		token->type = OPC;
 		return;
 
-	} else if (strspn(token->lexeme, "0123456789") != 0) {
+	} else if (strspn(token->lexeme, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM") == 0) {
 		token->type = NUM;
 		//printf("here\n");
 		return;
@@ -146,25 +158,30 @@ Token* getAllTokens(FILE *code) {
 		while (tracer != '\0') {
 		
 
-			if (tracer == ' ' || tracer == '\t' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '/' || tracer == '*' || tracer == '~' || tracer == '\n') {
+			if (tracer == ' ' || tracer == '\t' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '/' || tracer == '*' || tracer == '~' || tracer == '\n' || tracer == '#' || tracer == '<' || tracer == '>' || tracer == '=' || tracer == '\"'|| tracer == '\"') {
 
 
-				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=') {
-
+				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=' && tracer != '<' && tracer != '>') {
+				//printf("here1 %s %c\n", currToken->lexeme, tracer);
 				determineType(currToken);
 				currToken->next = (Token*) malloc(sizeof(Token));
 				currToken = currToken->next;
+				j = 0;
 				}
 
-				if (tracer == ';' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' ) {
+				if (tracer == ';' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' || tracer == '#' ) {
+					//printf("here2 %s %c\n", currToken->lexeme, tracer);
 					currToken->lexeme[0] = tracer;
 					determineType(currToken);
 					currToken->next = (Token*) malloc(sizeof(Token));
 					currToken = currToken->next;
+					j = 0;
 
 
-				} else if (tracer == '&' || tracer == '|' || tracer == '='|| tracer == '!' || tracer == '/' || tracer == '*') {
+				} else if (tracer == '&' || tracer == '|' || tracer == '='|| tracer == '!' || tracer == '/' || tracer == '*' || tracer == '<' || tracer == '>') {
 
+					//printf("here3 %s %c\n", currToken->lexeme, tracer);
+					
 					if (strcmp(currToken->lexeme, "&") == 0 && tracer == '&') {
 						currToken->lexeme[1] = '&';
 						j = 2;
@@ -182,7 +199,6 @@ Token* getAllTokens(FILE *code) {
 						j = 2;
 						//printf("everywhere\n");
 					} else {
-						//printf("here %s %c\n", currToken->lexeme, tracer);
 						if (strcmp(currToken->lexeme, "") != 0) {
 						determineType(currToken);
 						currToken->next = (Token*) malloc(sizeof(Token));
@@ -192,6 +208,7 @@ Token* getAllTokens(FILE *code) {
 						j = 1;
 						} else {
 							currToken->lexeme[0] = tracer;
+							j = 1;
 						}
 					}
 				}
@@ -203,7 +220,14 @@ Token* getAllTokens(FILE *code) {
 				j = 0;
 
 			} else {
-
+				if (strspn(currToken->lexeme, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890") == 0 && strcmp(currToken->lexeme, "") != 0) {
+					determineType(currToken);
+					currToken->next = (Token*) malloc(sizeof(Token));
+					currToken = currToken->next;
+					j = 0;
+				}
+				
+				//printf("here4 %s %c\n", currToken->lexeme, tracer);
 				currToken->lexeme[j] = tracer;
 				++i;
 				++j;
