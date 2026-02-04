@@ -854,24 +854,23 @@ void parseInclude() {
 		printf("ERROR: Header file %s not found\n", token->lexeme);
 		exit(-1);
 	} else {
-		//parse the include file
+		//store the token and instruction linked lists before recursing further
 		Token* mainToken = token;
-		Instruction* mainNode = node;
+		Instruction* mainNode = lead;
 		
+		//recurse to parse the header file
 		Token* includeToken = getAllTokens(includeFile);
 		Instruction* includeInstruction = parseTokens(includeToken);
 		
-		Instruction* tracer = includeInstruction;
+		//Attach the new instructions to the end of the current instruction list
+		Instruction* tracer = mainNode;
 		while (tracer->next != NULL) {
 			tracer = tracer->next;
 		}
 		
 		token = mainToken;
-		node = tracer;
-		newNode();
-		
-		
-		
+		lead = mainNode;
+		tracer->next = includeInstruction;
 	}
 	
 	if (languageLibrary == 0) {
