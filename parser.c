@@ -431,14 +431,14 @@ void parseAssignment() {
 	
 	//TODO Put operands into ACC and C (first value) then B for second value
 	} else if (peek(1) == STAR) {
-		printf("\nStar\n\n");
+		//printf("\nStar\n\n");
 		
 		expect(STAR);
 		mulOrDiv = 1;
 		
 		
 	} else if (peek(1) == SLASH) {
-		printf("\nSlash\n\n");
+		//printf("\nSlash\n\n");
 		
 		expect(SLASH);
 		mulOrDiv = 2;
@@ -822,6 +822,76 @@ void parseFunctionList() {
 	}
 }
 
+void parseInclude() {
+	char languageLibrary = 1;
+	
+	expect(POUND);
+	expect(INCLUDE);
+		
+		//Include files with surrounded by " are user-generated
+		//Include files surrounded by < are provided with the language
+	if (peek(1) == QUOTE) {
+		expect(QUOTE);
+		languageLibrary = 0;
+	} else {
+		expect(OPC);
+	}
+		
+	expect(ID);
+		
+	FILE* includeFile;
+	if (languageLibrary == 1) {
+		char fileName[1024];
+		strncpy(fileName, "include/", 1024);
+		includeFile = fopen(strcat(fileName, token->lexeme), "r");
+		
+	
+	} else {
+		includeFile = fopen(token->lexeme, "r");
+	}
+		
+	if (!includeFile) {
+		printf("ERROR: Header file %s not found\n", token->lexeme);
+		exit(-1);
+	} else {
+		//parse the include file
+		Token* mainToken = token;
+		Instruction* mainNode = node;
+		
+		Token* includeToken = getAllTokens(includeFile);
+		Instruction* includeInstruction = parseTokens(includeToken);
+		
+		Instruction* tracer = includeInstruction;
+		while (tracer->next != NULL) {
+			tracer = tracer->next;
+		}
+		
+		token = mainToken;
+		node = tracer;
+		newNode();
+		
+		
+		
+	}
+	
+	if (languageLibrary == 0) {
+		expect(QUOTE);
+	} else {
+		expect(OPC);
+	}
+	
+}
+
+void parseIncludeList() {
+
+	parseInclude();
+	
+	if (peek(1) == POUND) {
+		parseIncludeList();
+	}	
+	
+}
+
 //Macro function to recursively parse the tokens created by the lexer
 Instruction* parseTokens(Token* head) {
 
@@ -839,6 +909,8 @@ Instruction* parseTokens(Token* head) {
 	}
 
 	//printf("Start of parser\n");
+	if (peek(1) == POUND) {parseIncludeList();}
+	
 	parseFunctionList();
 	//printf("End of parser\n");
 	expect(END);

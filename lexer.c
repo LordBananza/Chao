@@ -169,7 +169,7 @@ Token* getAllTokens(FILE *code) {
 				j = 0;
 				}
 
-				if (tracer == ';' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' || tracer == '#' ) {
+				if (tracer == ';' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == ',' || tracer == '[' || tracer == ']' || tracer == '#' || tracer == '\"') {
 					//printf("here2 %s %c\n", currToken->lexeme, tracer);
 					currToken->lexeme[0] = tracer;
 					determineType(currToken);
