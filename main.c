@@ -53,9 +53,13 @@ int main (int argc , char* argv[]) {
 	
 	int count = 1;
 	while (frontInstruction->next->next != NULL) {
-			printf("Instruction #%d: %s %s %s %s\n", count++, frontInstruction->type, frontInstruction->op1, frontInstruction->op2, frontInstruction->op3);
+			printf("Instruction #%d: %s %s %s %s %s\n", count++, frontInstruction->header, frontInstruction->type, frontInstruction->op1, frontInstruction->op2, frontInstruction->op3);
 			
 			for (int i = 0; i < frontInstruction->tabCount; ++i) {fprintf(output, "\t");}
+			
+			if (frontInstruction->header != NULL) {
+				fprintf(output, "%s ", frontInstruction->header);
+			}
 			
 			if (frontInstruction->type != NULL) {
 				fprintf(output, "%s", frontInstruction->type);

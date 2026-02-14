@@ -23,6 +23,8 @@ IDName* parameters;
 //0 = free; 1 = taken;
 char addresses[255];
 
+char branchMarker;
+
 char* getAddressString(char address) {
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "%d", address);
@@ -540,18 +542,40 @@ void parseCall() {
 void parseComp() {
 	if (peek(1) == NUM) {
 		expect(NUM);
+		node->type = "mov";
+		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+		node->op2 = "acc";
+		newNode();
 	} else {
 		expect(ID);
+		
 		if (IDInUse(token->lexeme) == 0) {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 			exit(-1);
 		}
+		
+		int address = (int) findID(token->lexeme)->address;
+		node->type = "mov";
+		node->tabCount = tabCount;
+		node->op1 = strcat(getOp("#", 1, getAddressString(address)), ",");
+		node->op2 = "acc";
+		newNode();
+		
 		if (peek(1) == LBRACKET) {
 			expect(LBRACKET);
 			if (peek(1) == NUM) {
 				expect(NUM);
+				
 			} else if (peek(1) == ID) {
 				expect(ID);
+				
+				address = (int) findID(token->lexeme)->address;
+				
+				node->tabCount = tabCount;
+				node->type = "add";
+				node->op1 = getOp("#$", 2, getAddressString(address));
+				newNode();	
+				
 				if (IDInUse(token->lexeme) == 0) {
 					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 					exit(-1);
@@ -559,15 +583,36 @@ void parseComp() {
 			}
 			expect(RBRACKET);
 			}
+			
+		
 	}
+	
+	
 
 	if (peek(1) == OPC) {
 	expect(OPC);
+	
+	node->type = "st";
+	node->tabCount = tabCount;
+	node->op1 = "b";
+	newNode();
+	
+	char branchType[3];
+	
+	if (token->lexeme == "==") {
+		strncpy(branchType, "bne", 3);
+	} else if (token->lexeme == "!=") {
+		strncpy(branchType, "be", 3);
+	}
+	
+	//TODO implement branches for if OPC is >= <= < or > (do a be/bne, then check CY to see if it's one using bpc or bn 
+	
+	
 
 	if (peek(1) == NUM) {
 		expect(NUM);
 	} else {
-		printf("Here\n");
+		//printf("Here\n");
 		expect(ID);
 		if (IDInUse(token->lexeme) == 0) {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
@@ -587,6 +632,9 @@ void parseComp() {
 			expect(RBRACKET);
 			}
 	}
+	} else {
+		node->type = "bne";
+		node->op1 = "#1";
 	}
 
 }
@@ -606,7 +654,12 @@ void parseCondition() {
 
 void parseIf() {
 	expect(IF);
-
+	
+	char* ifCondition = (char*) malloc(14);
+	strncpy (ifCondition, ".branchPointA:", 14);
+	ifCondition[12] += branchMarker;
+	branchMarker++;
+	
 	expect(LPAREN);
 
 	parseCondition();
@@ -618,6 +671,8 @@ void parseIf() {
 
 	parseInstructionList();
 	IDNames = prevIDNames;
+
+	node->header = ifCondition;
 
 	expect(RBRACE);
 }
