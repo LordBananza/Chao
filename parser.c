@@ -271,7 +271,8 @@ void parseDeclaration() {
 	expect(TYPE);
 
 	expect(ID);
-
+	
+	
 	if (peek(1) == EQUAL) {
 		addID(token->lexeme, 1, 1);
 		IDName* id = findID(token->lexeme);
@@ -293,11 +294,77 @@ void parseDeclaration() {
 			newNode();
 			
 		} else {
-			expect(ID);
-			if (IDInUse(token->lexeme) == 0) {
-				printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
-				exit(-1);
+		expect(ID);
+		
+		int address = (int) findID(token->lexeme)->address;
+		char op1Offset = 0;
+		char* offsetAddress;
+		
+		if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+		}
+		if (peek(1) == LBRACKET) {
+			expect(LBRACKET);
+			if (peek(1) == NUM) {
+				expect(NUM);
+				
+				address += atoi(token->lexeme);
+					
+			} else if (peek(1) == ID) {
+				expect(ID);
+				if (IDInUse(token->lexeme) == 0) {
+					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+					exit(-1);
+				}
+				
+				op1Offset = 1;
+				offsetAddress = token->lexeme;
+			
+		}
+				
+			expect(RBRACKET);
 			}
+			
+			if (op1Offset == 1) {
+			//The compiler knows the array's starting address. We'll add that as a constant value to the unknown offset
+			
+			//load the variable for offset
+			node->type = "ld";
+			node->tabCount = tabCount;
+			node->op1 = getOp("$", 1, getAddressString(findID(offsetAddress)->address));
+			newNode();
+			
+			
+			//store offset in c register
+			node->type = "st";
+			node->tabCount = tabCount;
+			node->op1 = "c";
+			newNode();
+			
+			//load the value of the offset plus the known address
+			node->type = "ld";
+			node->tabCount = tabCount;
+			char addr[4];
+			node->op1 = "c";
+			sprintf(addr, "%x", address);
+			node->op2 = "+";
+			node->op3 = getOp("$", 1, addr);
+			newNode();
+			
+		} else {
+			
+			node->type = "ld";
+			node->tabCount = tabCount;
+			node->op1 = getOp("$", 1, getAddressString(address));
+			newNode();
+			
+		}
+			
+			node->type = "st";
+			node->op1 = getOp("$", 1, getAddressString(id->address));
+			node->tabCount = tabCount;
+			newNode();
 			
 			//TODO Add array checks and instructions
 			
