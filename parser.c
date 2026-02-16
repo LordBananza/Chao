@@ -897,6 +897,15 @@ void parseComp() {
 	
 	//TODO implement branches for if OPC is >= <= < or > (do a be/bne, then check CY to see if it's one using bpc or bn 
 	
+	else if (token->lexeme == "<") {
+	
+	} else if (token->lexeme == ">") {
+	
+	} else if (token->lexeme == "<=") {
+	
+	} else if (token->lexeme == ">=") {
+	
+	}
 	
 
 	if (peek(1) == NUM) {

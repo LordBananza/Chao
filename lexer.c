@@ -190,7 +190,7 @@ Token* getAllTokens(FILE *code) {
 						currToken->lexeme[1] = '|';
 						j = 2;
 						//printf("everywhere\n");
-					} else if (strcmp(currToken->lexeme, "=") == 0 && tracer == '=') {
+					} else if (strcmp(currToken->lexeme, "=") == 0 && tracer == '=' || tracer == '>' || tracer == '<') {
 						currToken->lexeme[1] = '=';
 						j = 2;
 						//printf("everywhere\n");
