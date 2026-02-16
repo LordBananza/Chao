@@ -23,7 +23,8 @@ IDName* parameters;
 //0 = free; 1 = taken;
 char addresses[255];
 
-char branchMarker;
+int ifNumber;
+int whileNumber;
 
 char* getAddressString(char address) {
 	char* addr = (char*) malloc(4);
@@ -944,10 +945,9 @@ void parseCondition() {
 void parseIf() {
 	expect(IF);
 	
-	char* ifCondition = (char*) malloc(14);
-	strncpy (ifCondition, ".branchPointA:", 14);
-	ifCondition[12] += branchMarker;
-	branchMarker++;
+	char* point1 = (char*) malloc(20);
+	sprintf(point1, ".if%d:", ifNumber);
+	ifNumber++;
 	
 	expect(LPAREN);
 
@@ -961,7 +961,7 @@ void parseIf() {
 	parseInstructionList();
 	IDNames = prevIDNames;
 
-	node->header = ifCondition;
+	node->header = point1;
 
 	expect(RBRACE);
 }
@@ -1132,6 +1132,7 @@ void parseFunction() {
 	node->type = strcat(token->lexeme, ":");
 	node->tabCount = 0;
 	tabCount = 1;
+
 	
 	node->next = (Instruction*) malloc(sizeof(Instruction));
 	node = node->next;
@@ -1245,6 +1246,8 @@ Instruction* parseTokens(Token* head) {
 	node = lead;
 	
 	tabCount = 0;
+	ifNumber = 0;
+	whileNumber = 0;
 	
 	IDNames = (IDName*) malloc(sizeof(IDName));
 	for (int i = 0; i < 255; ++i) {
