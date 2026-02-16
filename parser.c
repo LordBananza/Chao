@@ -283,7 +283,7 @@ void parseDeclaration() {
 			
 			node->type = "mov";
 			node->tabCount = tabCount;
-			node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+			node->op1 = getOp("#", 1, strcat(token->lexeme, ","));
 			node->op2 = "acc";
 			newNode();
 			
@@ -298,6 +298,8 @@ void parseDeclaration() {
 				printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 				exit(-1);
 			}
+			
+			//TODO Add array checks and instructions
 			
 		}
 		
@@ -398,41 +400,36 @@ void parseAssignment() {
 			}
 			
 			if (op1Offset == 1) {
+			//The compiler knows the array's starting address. We'll add that as a constant value to the unknown offset
 			
-			//load the original address into acc
-			node->type = "mov";
+			//load the variable for offset
+			node->type = "ld";
 			node->tabCount = tabCount;
-			char addr[4];
-			sprintf(addr, "%x", address);
-			node->op1 = getOp("#", 1, addr);
-			node->op1 = strcat(node->op1, ",");
-			node->op2 = "acc";
+			node->op1 = getOp("$", 1, getAddressString(findID(offsetAddress)->address));
 			newNode();
 			
-			//Add the variable offset
-			node->type = "add";
-			node->tabCount = tabCount;
-			node->op1 = getOp("#$", 2, getAddressString(findID(offsetAddress)->address));
-			newNode();
 			
-			//store address in c register
+			//store offset in c register
 			node->type = "st";
 			node->tabCount = tabCount;
 			node->op1 = "c";
 			newNode();
 			
-			//load the value of the calculated address
+			//load the value of the offset plus the known address
 			node->type = "ld";
 			node->tabCount = tabCount;
-			node->op1 = "$c";
+			char addr[4];
+			node->op1 = "c";
+			sprintf(addr, "%x", address);
+			node->op2 = "+";
+			node->op3 = getOp("$", 1, addr);
 			newNode();
 			
 		} else {
 			
-			node->type = "mov";
+			node->type = "ld";
 			node->tabCount = tabCount;
-			node->op1 = strcat(getOp("#$", 2, getAddressString(address)), ",");
-			node->op2 = "acc";
+			node->op1 = getOp("$", 1, getAddressString(address));
 			newNode();
 			
 		}
@@ -461,27 +458,18 @@ void parseAssignment() {
 			node->op1 = "b";
 			newNode();
 			
-			//load the first address in the array
-			node->type = "mov";
+			//load the variable offset
+			node->type = "ld";
 			node->tabCount = tabCount;
-			char dest[4];
-			sprintf(dest, "%x", destination);
-			node->op1 = getOp("#", 1, dest);
-			node->op1 = strcat(node->op1, ",");
-			node->op2 = "acc";
+			node->op1 = getOp("$", 1, getAddressString(findID(offsetID)->address));
 			newNode();
 			
-			//Add the variable offset
-			node->type = "add";
-			node->tabCount = tabCount;
-			node->op1 = getOp("#$", 2, getAddressString(findID(offsetID)->address));
-			newNode();
-			
-			//store address in c register
+			//store offset in c register
 			node->type = "st";
 			node->tabCount = tabCount;
 			node->op1 = "c";
 			newNode();
+			
 			
 			//load the result back into acc
 			node->type = "ld";
@@ -489,10 +477,14 @@ void parseAssignment() {
 			node->op1 = "b";
 			newNode();
 			
-			//store result in address found in c
+			//store the result to the offset plus the known address
 			node->type = "st";
 			node->tabCount = tabCount;
-			node->op1 = "$b";
+			char addr[4];
+			node->op1 = "c";
+			sprintf(addr, "%x", destination);
+			node->op2 = "+";
+			node->op3 = getOp("$", 1, addr);
 			newNode();
 			
 		} else {
@@ -584,23 +576,30 @@ void parseAssignment() {
 			node->op1 = "b";
 			newNode();
 			
-			//load the original address into acc
-			node->type = "mov";
-			node->tabCount = tabCount;
-			char addr[4];
-			sprintf(addr, "%x", address);
-			node->op1 = getOp("#", 1, addr);
-			node->op1 = strcat(node->op1, ",");
-			node->op2 = "acc";
-			newNode();
 			
-			//Add the variable offset
-			node->type = "add";
+			//load the variable offset
+			node->type = "ld";
 			node->tabCount = tabCount;
-			node->op1 = getOp("#$", 2, getAddressString(findID(offsetAddress)->address));
+			node->op1 = getOp("$", 1, getAddressString(findID(offsetAddress)->address));
 			newNode();
 			
 			//store address in c register
+			node->type = "st";
+			node->tabCount = tabCount;
+			node->op1 = "c";
+			newNode();
+			
+			//load the value of the offset plus the known address
+			node->type = "ld";
+			node->tabCount = tabCount;
+			char addr[4];
+			node->op1 = "c";
+			sprintf(addr, "%x", address);
+			node->op2 = "+";
+			node->op3 = getOp("$", 1, addr);
+			newNode();
+			
+			//store value in c register
 			node->type = "st";
 			node->tabCount = tabCount;
 			node->op1 = "c";
@@ -627,7 +626,6 @@ void parseAssignment() {
 		op2 = getOp("#", 1, token->lexeme);
 		
 		
-		if (mulOrDiv == 0) {newNode();}
 	}
 	
 	
@@ -649,12 +647,6 @@ void parseAssignment() {
 		node->tabCount = tabCount;
 		newNode();
 		
-		/*node->type = "mov";
-		node->tabCount = tabCount;
-		node->op1 = getOp("", 0, op2);
-		node->op1 = strcat(node->op1, ",");
-		node->op2 = "b";
-		newNode();*/
 		
 		if (mulOrDiv == 1) {
 			node->type = "mul";
@@ -684,27 +676,18 @@ void parseAssignment() {
 			node->op1 = "b";
 			newNode();
 			
-			//load the first address in the array
-			node->type = "mov";
+			//load the variable offset
+			node->type = "ld";
 			node->tabCount = tabCount;
-			char dest[4];
-			sprintf(dest, "%x", destination);
-			node->op1 = getOp("#", 1, dest);
-			node->op1 = strcat(node->op1, ",");
-			node->op2 = "acc";
+			node->op1 = getOp("$", 1, getAddressString(findID(offsetID)->address));
 			newNode();
 			
-			//Add the variable offset
-			node->type = "add";
-			node->tabCount = tabCount;
-			node->op1 = getOp("$", 2, getAddressString(findID(offsetID)->address));
-			newNode();
-			
-			//store address in c register
+			//store offset in c register
 			node->type = "st";
 			node->tabCount = tabCount;
 			node->op1 = "c";
 			newNode();
+			
 			
 			//load the result back into acc
 			node->type = "ld";
@@ -712,10 +695,14 @@ void parseAssignment() {
 			node->op1 = "b";
 			newNode();
 			
-			//store result in address found in c
+			//store the result to the offset plus the known address
 			node->type = "st";
 			node->tabCount = tabCount;
-			node->op1 = "$b";
+			char addr[4];
+			node->op1 = "c";
+			sprintf(addr, "%x", destination);
+			node->op2 = "+";
+			node->op3 = getOp("$", 1, addr);
 			newNode();
 			
 		} else {
@@ -791,10 +778,9 @@ void parseComp() {
 		}
 		
 		int address = (int) findID(token->lexeme)->address;
-		node->type = "mov";
+		node->type = "ld";
 		node->tabCount = tabCount;
-		node->op1 = strcat(getOp("#", 1, getAddressString(address)), ",");
-		node->op2 = "acc";
+		node->op1 = getOp("#", 1, getAddressString(address));
 		newNode();
 		
 		if (peek(1) == LBRACKET) {
