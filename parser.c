@@ -298,6 +298,33 @@ void parseDeclaration() {
 		} else {
 		expect(ID);
 		
+		if (peek(1) == LPAREN) {//Function call
+			
+			char* name = token->lexeme;
+		
+			expect(LPAREN);
+
+			if (peek(1) != RPAREN) {
+				parameters = NULL;
+				parseParameterList();
+		
+				pushParameters();
+		
+				node->type = "call";
+				node->tabCount = tabCount;
+				node->op1 = name;
+				newNode();
+			}
+			
+			node->type = "pop";
+			node->tabCount = tabCount;
+			node->op1 = getOp("$", 1, getAddressString(id->address));
+			newNode();
+			
+			expect(RPAREN);
+		
+		} else {//Variable
+		
 		int address = (int) findID(token->lexeme)->address;
 		char op1Offset = 0;
 		char* offsetAddress;
@@ -371,6 +398,7 @@ void parseDeclaration() {
 			//TODO Add array checks and instructions
 			
 		}
+		}
 		
 		
 
@@ -410,6 +438,7 @@ void parseAssignment() {
 	int destination = (int) findID(token->lexeme)->address;
 	char arrOffset = 0;
 	char* offsetID;
+	char functionCall = 0;
 	
 	
 	if (peek(1) == LBRACKET) {
@@ -437,6 +466,34 @@ void parseAssignment() {
 
 	if (peek(1) == ID) {
 		expect(ID);
+		
+		if (peek(1) == LPAREN) {//Function call
+			
+			functionCall = 1;
+			char* name = token->lexeme;
+		
+			expect(LPAREN);
+
+			if (peek(1) != RPAREN) {
+				parameters = NULL;
+				parseParameterList();
+		
+				pushParameters();
+		
+				node->type = "call";
+				node->tabCount = tabCount;
+				node->op1 = name;
+				newNode();
+			}
+			
+			node->type = "pop";
+			node->tabCount = tabCount;
+			node->op1 = getOp("$", 1, getAddressString(destination));
+			newNode();
+			
+			expect(RPAREN);
+		
+		} else {//Variable
 		
 		int address = (int) findID(token->lexeme)->address;
 		char op1Offset = 0;
@@ -502,6 +559,7 @@ void parseAssignment() {
 			newNode();
 			
 		}
+		}
 			
 	} else {
 		expect(NUM);
@@ -556,7 +614,7 @@ void parseAssignment() {
 			node->op3 = getOp("$", 1, addr);
 			newNode();
 			
-		} else {
+		} else if (functionCall == 0) {
 		
 		node->type = "st";
 		node->tabCount = tabCount;
