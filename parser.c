@@ -846,32 +846,58 @@ void parseComp() {
 		}
 		
 		int address = (int) findID(token->lexeme)->address;
-		node->type = "ld";
-		node->tabCount = tabCount;
-		node->op1 = getOp("#", 1, getAddressString(address));
-		newNode();
+		
 		
 		if (peek(1) == LBRACKET) {
 			expect(LBRACKET);
 			if (peek(1) == NUM) {
 				expect(NUM);
 				
+				address += atoi(token->lexeme);
+				
+				node->type = "ld";
+				node->tabCount = tabCount;
+				node->op1 = getOp("$", 1, getAddressString(address));
+				newNode();
+				
 			} else if (peek(1) == ID) {
 				expect(ID);
-				
-				address = (int) findID(token->lexeme)->address;
-				
-				node->tabCount = tabCount;
-				node->type = "add";
-				node->op1 = getOp("#$", 2, getAddressString(address));
-				newNode();	
 				
 				if (IDInUse(token->lexeme) == 0) {
 					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 					exit(-1);
 				}
+				
+				int offsetAddress = (int) findID(token->lexeme)->address;
+				
+				//load the value of the offset variable
+				node->tabCount = tabCount;
+				node->type = "ld";
+				node->op1 = getOp("$", 1, getAddressString(offsetAddress));
+				newNode();	
+				
+				//store the offset in c
+				node->tabCount = tabCount;
+				node->type = "st";
+				node->op1 = "c";
+				newNode();
+				
+				//fetch the value being accessed
+				node->tabCount = tabCount;
+				node->type = "ld";
+				node->op1 = "c";
+				node->op2 = "+";
+				node->op3 = getOp("$", 1, getAddressString(address));
+				newNode();
+				
 			}
 			expect(RBRACKET);
+			
+			} else {
+				node->type = "ld";
+				node->tabCount = tabCount;
+				node->op1 = getOp("$", 1, getAddressString(address));
+				newNode();
 			}
 			
 		
@@ -881,59 +907,163 @@ void parseComp() {
 
 	if (peek(1) == OPC) {
 	expect(OPC);
-	
+
+	//store the first operand in the b register	
 	node->type = "st";
 	node->tabCount = tabCount;
 	node->op1 = "b";
 	newNode();
 	
-	char branchType[3];
+	char branchType;
+	char twoBranches;
 	
-	if (token->lexeme == "==") {
-		strncpy(branchType, "bne", 3);
-	} else if (token->lexeme == "!=") {
-		strncpy(branchType, "be", 3);
+	if (strcmp(token->lexeme, "==") == 0) {
+		branchType = 1;
+	} else if (strcmp(token->lexeme, "!=") == 0) {
+		branchType = 0;
 	}
 	
 	//TODO implement branches for if OPC is >= <= < or > (do a be/bne, then check CY to see if it's one using bpc or bn 
 	
-	else if (token->lexeme == "<") {
+	//TODO Fix the lexer to ensure < and > are picked up on their own
 	
-	} else if (token->lexeme == ">") {
-	
-	} else if (token->lexeme == "<=") {
-	
-	} else if (token->lexeme == ">=") {
-	
+	// > and < are easy enough; if they're equal, then the condition is automatically false. If not, then we can use CY to check which operand is greater than or less than 
+	else if (strcmp(token->lexeme, "<") == 0) {
+		branchType = 0;
+		twoBranches = 1;
+	} else if (strcmp(token->lexeme, ">") == 0) {
+		branchType = 0;
+		twoBranches = 2;
+	} else if (strcmp(token->lexeme, "<=") == 0) {
+		branchType = 1;
+		twoBranches = 3;
+	} else if (strcmp(token->lexeme, ">=") == 0) {
+		branchType = 1;
+		twoBranches = 4;
 	}
-	
+		
 
 	if (peek(1) == NUM) {
 		expect(NUM);
+		
+		node->type = "mov";
+		node->tabCount = tabCount;
+		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+		node->op2 = "acc";
+		newNode();
+		
+		
 	} else {
-		//printf("Here\n");
 		expect(ID);
+		
 		if (IDInUse(token->lexeme) == 0) {
 			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 			exit(-1);
 		}
+		
+		int address = (int) findID(token->lexeme)->address;
+		
+		
 		if (peek(1) == LBRACKET) {
 			expect(LBRACKET);
 			if (peek(1) == NUM) {
 				expect(NUM);
+				
+				address += atoi(token->lexeme);
+				
+				node->type = "ld";
+				node->tabCount = tabCount;
+				node->op1 = getOp("$", 1, getAddressString(address));
+				newNode();
+				
 			} else if (peek(1) == ID) {
 				expect(ID);
+				
 				if (IDInUse(token->lexeme) == 0) {
 					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 					exit(-1);
 				}
+				
+				int offsetAddress = (int) findID(token->lexeme)->address;
+				
+				//load the value of the offset variable
+				node->tabCount = tabCount;
+				node->type = "ld";
+				node->op1 = getOp("$", 1, getAddressString(offsetAddress));
+				newNode();	
+				
+				//store the offset in c
+				node->tabCount = tabCount;
+				node->type = "st";
+				node->op1 = "c";
+				newNode();
+				
+				//fetch the value being accessed
+				node->tabCount = tabCount;
+				node->type = "ld";
+				node->op1 = "c";
+				node->op2 = "+";
+				node->op3 = getOp("$", 1, getAddressString(address));
+				newNode();
+				
 			}
 			expect(RBRACKET);
+			
+			} else {
+				node->type = "ld";
+				node->tabCount = tabCount;
+				node->op1 = getOp("$", 1, getAddressString(address));
+				newNode();
 			}
+			
 	}
+	
+	//for == and !=
+	if (twoBranches == 0) {
+		if (branchType == 0) {
+			node->type = "be";
+		} else {
+			node->type = "bne";
+		}
+		node->tabCount = tabCount;
+		node->op1 = "b,";
 	} else {
-		node->type = "bne";
-		node->op1 = "#1";
+		//TODO write instructions for < > >= and <=
+		char* subBranchColon = (char*) malloc(20);
+		char* subBranch = (char*) malloc(19);
+		sprintf(subBranchColon, ".subif%x:", ifNumber);
+		sprintf(subBranch, ".subif%x", ifNumber);
+		ifNumber++;
+		
+		node->type = "clr1";
+		node->tabCount = tabCount;
+		node->op1 = "acc,";
+		node->op2 = "cy";
+		newNode();
+		
+		if (twoBranches == 1) { // <
+			 
+		} else if (twoBranches == 2) { // >
+			node->type = "be";
+			node->tabCount = tabCount;
+			node->op1 = "b,";
+			node->op2 = subBranch;
+			newNode();
+			
+			node->type = "bpc";
+			node->tabCount = tabCount;
+			node->op1 = "acc,";
+			node->op2 = "cy";
+			newNode();
+		}
+	}
+	
+	
+	
+	//No comparison means checking if the value not zero
+	} else {
+		node->type = "bnz";
+		node->tabCount = tabCount;
 	}
 
 }
@@ -954,13 +1084,19 @@ void parseCondition() {
 void parseIf() {
 	expect(IF);
 	
-	char* point1 = (char*) malloc(20);
-	sprintf(point1, ".if%d:", ifNumber);
+	char* pointColon = (char*) malloc(20);
+	char* point = (char*) malloc(19);
+	sprintf(pointColon, ".if%x:", ifNumber);
+	sprintf(point, ".if%x", ifNumber);
 	ifNumber++;
 	
 	expect(LPAREN);
 
 	parseCondition();
+	
+	//appended to the branch instruction
+	node->op2 = point;
+	newNode();
 
 	expect(RPAREN);
 
@@ -970,7 +1106,8 @@ void parseIf() {
 	parseInstructionList();
 	IDNames = prevIDNames;
 
-	node->header = point1;
+	//label points to right after the if statement
+	node->header = pointColon;
 
 	expect(RBRACE);
 }
