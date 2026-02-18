@@ -190,7 +190,11 @@ Token* getAllTokens(FILE *code) {
 						currToken->lexeme[1] = '|';
 						j = 2;
 						//printf("everywhere\n");
-					} else if (strcmp(currToken->lexeme, "=") == 0 && tracer == '=' || tracer == '>' || tracer == '<') {
+					} else if (strcmp(currToken->lexeme, ">") == 0 && tracer == '=') {
+						currToken->lexeme[1] = '=';
+						j = 2;
+						//printf("everywhere\n");
+					} else if (strcmp(currToken->lexeme, "<") == 0 && tracer == '=') {
 						currToken->lexeme[1] = '=';
 						j = 2;
 						//printf("everywhere\n");
@@ -204,7 +208,7 @@ Token* getAllTokens(FILE *code) {
 						currToken->next = (Token*) malloc(sizeof(Token));
 						currToken = currToken->next;
 						currToken->lexeme[0] = tracer;
-						//printf(" %s\n", currToken->lexeme);
+						printf(" %s\n", currToken->lexeme);
 						j = 1;
 						} else {
 							currToken->lexeme[0] = tracer;
@@ -221,13 +225,14 @@ Token* getAllTokens(FILE *code) {
 
 			} else {
 				if (strspn(currToken->lexeme, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890") == 0 && strcmp(currToken->lexeme, "") != 0) {
+					//printf("here5 %d %d %s %c\n", i, j, currToken->lexeme, tracer);
 					determineType(currToken);
 					currToken->next = (Token*) malloc(sizeof(Token));
 					currToken = currToken->next;
 					j = 0;
 				}
 				
-				//printf("here4 %s %c\n", currToken->lexeme, tracer);
+				//printf("here4 %d %d %s %c\n", i, j, currToken->lexeme, tracer);
 				currToken->lexeme[j] = tracer;
 				++i;
 				++j;
