@@ -16,6 +16,6 @@ void main() {
 		}
 		xyzw = xyzw + 5;
 	}
-	main2(xyzw, arr[20]);
+	xyzw = main2(xyzw, arr[20]);
 }
 
