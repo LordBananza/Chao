@@ -25,6 +25,7 @@ char addresses[255];
 
 int ifNumber;
 int whileNumber;
+char ifOrWhile;
 
 char* getAddressString(char address) {
 	char* addr = (char*) malloc(4);
@@ -834,6 +835,7 @@ void parseComp() {
 	if (peek(1) == NUM) {
 		expect(NUM);
 		node->type = "mov";
+		node->tabCount = tabCount;
 		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
 		node->op2 = "acc";
 		newNode();
@@ -925,9 +927,9 @@ void parseComp() {
 	
 	//TODO implement branches for if OPC is >= <= < or > (do a be/bne, then check CY to see if it's one using bpc or bn 
 	
-	//TODO Fix the lexer to ensure < and > are picked up on their own
+	// > and < are easy enough; if they're equal, then the condition is automatically false. If not, then we can use CY to check which operand is greater than or less than
 	
-	// > and < are easy enough; if they're equal, then the condition is automatically false. If not, then we can use CY to check which operand is greater than or less than 
+	// >= and <= can be interpreted as the opposites of < and >, respectively. Therefore, a fail on a < or a > means a success for a >= or a <=
 	else if (strcmp(token->lexeme, "<") == 0) {
 		branchType = 0;
 		twoBranches = 1;
@@ -1031,9 +1033,13 @@ void parseComp() {
 		//TODO write instructions for < > >= and <=
 		char* subBranchColon = (char*) malloc(20);
 		char* subBranch = (char*) malloc(19);
-		sprintf(subBranchColon, ".subif%x:", ifNumber);
-		sprintf(subBranch, ".subif%x", ifNumber);
-		ifNumber++;
+		if (ifOrWhile == 0) {
+			sprintf(subBranchColon, ".if%x:", ifNumber-1);
+			sprintf(subBranch, ".if%x", ifNumber-1);
+		} else {
+			sprintf(subBranchColon, ".while%x:", whileNumber-1);
+			sprintf(subBranch, ".while%x", whileNumber-1);
+		}
 		
 		node->type = "clr1";
 		node->tabCount = tabCount;
@@ -1041,28 +1047,122 @@ void parseComp() {
 		node->op2 = "cy";
 		newNode();
 		
-		if (twoBranches == 1) { // <
-			 
-		} else if (twoBranches == 2) { // >
+		if (twoBranches == 1) { // op1 < op2
+			//check for equality (automatic fail)
 			node->type = "be";
 			node->tabCount = tabCount;
 			node->op1 = "b,";
 			node->op2 = subBranch;
 			newNode();
 			
+			//check if op2 < op1 (also a fail)
 			node->type = "bpc";
 			node->tabCount = tabCount;
 			node->op1 = "acc,";
-			node->op2 = "cy";
+			node->op2 = "cy,";
+			
+			
+		} else if (twoBranches == 2) { // op1 > op2
+			//swap positions of operands so that op2 is in acc, then do the same as a greater than operation
+			node->type = "st";
+			node->tabCount = tabCount;
+			node->op1 = "c";
+			newNode(); 
+			
+			node->type = "ld";
+			node->tabCount = tabCount;
+			node->op1 = "b";
 			newNode();
+			
+			//check for equality op1 = op2 (automatic fail)
+			node->type = "be";
+			node->tabCount = tabCount;
+			node->op1 = "c,";
+			node->op2 = subBranch;
+			newNode();
+			
+			//check if op1 < op2 (also a failure)
+			node->type = "bpc";
+			node->tabCount = tabCount;
+			node->op1 = "acc,";
+			node->op2 = "cy,";
+			
+
+		} else if (twoBranches == 3) { // <=
+			
+			//create a new label (points to inside the if block, taken on success)
+			char* successColon = (char*) malloc(20);
+			char* success = (char*) malloc(19);
+			if (ifOrWhile == 0) {
+				sprintf(successColon, ".ifs%x:", ifNumber-1);
+				sprintf(success, ".ifs%x", ifNumber-1);
+			} else {
+				sprintf(success, ".whiles%x:", whileNumber-1);
+				sprintf(successColon, ".whiles%x", whileNumber-1);
+			}
+			
+			//Check for equality (automatic success)
+			node->type = "be";
+			node->tabCount = tabCount;
+			node->op1 = "b,";
+			node->op2 = success;
+			newNode();
+			
+			//Check if less than bit is on (also success)
+			node->type = "bpc";
+			node->tabCount = tabCount;
+			node->op1 = "acc,";
+			node->op2 = "cy,";
+			node->op3 = success;
+			newNode();
+			
+			//branch to failure (only reach here if checks fail)
+			node->type = "br";
+			node->tabCount = tabCount;
+			node->op1 = subBranch;
+			newNode();
+			
+			//Label the success
+			node->header = successColon; 
+			
+		} else if (twoBranches == 4) { // >=
+			
+			//create a new label (points to inside the if block, taken on success)
+			char* successColon = (char*) malloc(20);
+			char* success = (char*) malloc(19);
+			if (ifOrWhile == 0) {
+				sprintf(successColon, ".ifs%x:", ifNumber-1);
+				sprintf(success, ".ifs%x", ifNumber-1);
+			} else {
+				sprintf(success, ".whiles%x:", whileNumber-1);
+				sprintf(successColon, ".whiles%x", whileNumber-1);
+			}
+			
+			//Check for equality (automatic success)
+			node->type = "be";
+			node->tabCount = tabCount;
+			node->op1 = "b,";
+			node->op2 = success;
+			newNode();
+			
+			//Check if less than bit is on (failure)
+			node->type = "bpc";
+			node->tabCount = tabCount;
+			node->op1 = "acc,";
+			node->op2 = "cy,";
+			node->op3 = subBranch;
+			newNode();
+			
+			//Label the success
+			node->header = successColon; 
 		}
 	}
 	
 	
 	
-	//No comparison means checking if the value not zero
+	//No comparison means checking if the value is not zero; jump if that check fails
 	} else {
-		node->type = "bnz";
+		node->type = "bz";
 		node->tabCount = tabCount;
 	}
 
@@ -1084,6 +1184,7 @@ void parseCondition() {
 void parseIf() {
 	expect(IF);
 	
+	ifOrWhile = 0;
 	char* pointColon = (char*) malloc(20);
 	char* point = (char*) malloc(19);
 	sprintf(pointColon, ".if%x:", ifNumber);
@@ -1095,8 +1196,11 @@ void parseIf() {
 	parseCondition();
 	
 	//appended to the branch instruction
-	node->op2 = point;
-	newNode();
+	
+	if (node->header == NULL) {
+		node->op3 = point;
+		newNode();
+	}
 
 	expect(RPAREN);
 
@@ -1114,9 +1218,32 @@ void parseIf() {
 
 void parseWhile() {
 	expect(WHILE);
+	
+	ifOrWhile = 1;
+	char* pointColon = (char*) malloc(20);
+	char* point = (char*) malloc(19);
+	sprintf(pointColon, ".while%x:", whileNumber);
+	sprintf(point, ".while%x", whileNumber);
+	
+	char* startColon = (char*) malloc(20);
+	char* start = (char*) malloc(19);
+	sprintf(startColon, ".start%x:", whileNumber);
+	sprintf(start, ".start%x", whileNumber);
+	
+	whileNumber++;
+	
 	expect(LPAREN);
 
+	node->header = startColon;
+
 	parseCondition();
+	
+	//appended to the branch instruction
+	
+	if (node->header == NULL) {
+		node->op3 = point;
+		newNode();
+	}
 	
 	expect(RPAREN);
 	expect(LBRACE);
@@ -1124,6 +1251,14 @@ void parseWhile() {
 	
 	parseInstructionList();
 	IDNames = prevIDNames;
+	
+	node->type = "br";
+	node->tabCount = tabCount;
+	node->op1 = start;
+	newNode();
+	
+	//label points to right after the while statement (taken on condition failure)
+	node->header = pointColon;
 	
 	expect(RBRACE);
 }
@@ -1183,25 +1318,76 @@ void parseReturn() {
 		node->op2 = "acc";
 		newNode();
 		
-		node->type = "push";
-		node->tabCount = tabCount;
-		node->op1 = "acc";
-		newNode();
-		
 		
 	} else if (peek(1) == ID) {
 		expect(ID);
 		
+		if (IDInUse(token->lexeme) == 0) {
+			printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+			exit(-1);
+		}
+		
 		int address = (int) findID(token->lexeme)->address;
 		
-		//TODO finish getting address of variable;
 		
 		if (peek(1) == LBRACKET) {
 			expect(LBRACKET);
-			expect(NUM);
+			if (peek(1) == NUM) {
+				expect(NUM);
+				
+				address += atoi(token->lexeme);
+				
+				node->type = "ld";
+				node->tabCount = tabCount;
+				node->op1 = getOp("$", 1, getAddressString(address));
+				newNode();
+				
+			} else if (peek(1) == ID) {
+				expect(ID);
+				
+				if (IDInUse(token->lexeme) == 0) {
+					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
+					exit(-1);
+				}
+				
+				int offsetAddress = (int) findID(token->lexeme)->address;
+				
+				//load the value of the offset variable
+				node->tabCount = tabCount;
+				node->type = "ld";
+				node->op1 = getOp("$", 1, getAddressString(offsetAddress));
+				newNode();	
+				
+				//store the offset in c
+				node->tabCount = tabCount;
+				node->type = "st";
+				node->op1 = "c";
+				newNode();
+				
+				//fetch the value being accessed
+				node->tabCount = tabCount;
+				node->type = "ld";
+				node->op1 = "c";
+				node->op2 = "+";
+				node->op3 = getOp("$", 1, getAddressString(address));
+				newNode();
+				
+			}
 			expect(RBRACKET);
-		}
+			
+			} else {
+				node->type = "ld";
+				node->tabCount = tabCount;
+				node->op1 = getOp("$", 1, getAddressString(address));
+				newNode();
+			}
+			
 	}
+	
+	node->type = "push";
+	node->tabCount = tabCount;
+	node->op1 = "acc";
+	newNode();
 	
 	node->type = "ret";
 	node->tabCount = tabCount;

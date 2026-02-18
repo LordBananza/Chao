@@ -1,21 +1,21 @@
 char main2(char input, char input2) {
 	input = input + 5;
-	return 10;
+	return input;
 }
 
-char main() {
-/* test comment */
+void main() {
+ /*test comment*/ 
 	char xyzw = 50;
 	char arr[24];
 	char arr2[30];
 	arr2[25] = 50;
 	arr[xyzw] = arr2[25];
-	/*if (arr[xyzw] == 50 && xyzw == 0) {
-		xyzw = 2;
-		asm(jmp point);
-		char x = 5;
-	}*/
+	if(xyzw < 100) {
+		while (1) {
+			xyzw = xyzw - 4;
+		}
+		xyzw = xyzw + 5;
+	}
 	main2(xyzw, arr[20]);
 }
-
 

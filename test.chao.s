@@ -6,10 +6,10 @@
 main2:
 	pop $0
 	pop $1
-	mov #$0, acc
-	add 5
+	ld $0
+	add #5
 	st $0
-	mov #10, acc
+	ld $0
 	push acc
 	ret
 
@@ -17,9 +17,28 @@ main:
 	mov #50, acc
 	st $2
 	mov #50, acc
-	st $52
-	mov #$52, acc
-	st $3
-	push $3
+	st $34
+	ld $34
+	st b
+	ld $2
+	st c
+	ld b
+	st c + $3
+	ld $2
+	st b
+	mov #100, acc
+	clr1 acc, cy
+	be b, .if0
+	bpc acc, cy, .if0
+.start0: mov #1, acc
+	bz .while0
+	ld $2
+	sub #4
+	st $2
+	br .start0
+.while0: ld $2
+	add #5
+	st $2
+.if0: push $17
 	push $2
 	call main2
