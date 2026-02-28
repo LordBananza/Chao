@@ -27,7 +27,7 @@ int ifNumber;
 int whileNumber;
 char ifOrWhile;
 
-char* getAddressString(char address) {
+char* getAddressString(unsigned char address) {
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "%x", address);
 	return addr;
@@ -39,11 +39,11 @@ void freeMemory(char address, int size) {
 	}
 }
 
-char findFreeMemory(int size) {
+unsigned char findFreeMemory(int size) {
 	char ready = -1;
 	unsigned char start = 0;
 	int count = 0;
-	for (int i = 0; i < 255; ++i) {
+	for (int i = 128; i < 255; ++i) {
 		if (ready == -1) {
 			if (addresses[i] == 0) {
 				printf("Found potential starting point at %d\n", i);
@@ -65,6 +65,8 @@ char findFreeMemory(int size) {
 			}
 		}
 	}
+	printf("ERROR: Too much memory is in use right now. Try using less variables, or shorter arrays.\n");
+	exit(-1); 
 }
 
 IDName* findID (char* ID) {
@@ -261,7 +263,7 @@ void parseArgument() {
 	node->type = "pop";
 	node->tabCount = tabCount;
 	char addr[3];
-	int ad = (int) findID(token->lexeme)->address;
+	int ad = findID(token->lexeme)->address;
 	sprintf(addr, "%x", ad);		
 	node->op1 = getOp("$", 1, addr);
 	newNode();
@@ -878,11 +880,13 @@ void parseCall() {
 		
 		pushParameters();
 		
-		node->type = "call";
-		node->tabCount = tabCount;
-		node->op1 = name;
-		newNode();
+		
 	}
+	
+	node->type = "call";
+	node->tabCount = tabCount;
+	node->op1 = name;
+	newNode();
 
 	expect(RPAREN);
 
@@ -1331,11 +1335,17 @@ void parseASM() {
 	node->type = token->lexeme;
 	node->tabCount = tabCount;
 	
+	char* operands = (char*) malloc(1024);
+	
+	strncpy(operands, token->lexeme, 1024);
+	strcat(operands, " ");
+	printf("%s\n", operands);
+	
 	if (peek(1) == EQUAL) {
 		expect(EQUAL);
 		node->op1 = token->lexeme;
 		
-		expect(ID);
+		expect(peek(1));
 		node->op2 = token->lexeme;
 		
 	} else if (strcmp(token->lexeme, ".org") == 0) {
@@ -1343,7 +1353,11 @@ void parseASM() {
 	} else {
 		int currentOp = 1;
 		while (peek(1) != RPAREN) {
-			expect(ID);
+			expect(peek(1));
+			strcat(operands, token->lexeme);
+			printf("%s\n", operands);
+			
+			/*expect(peek(1));
 			if(currentOp == 1) {
 				node->op1 = token->lexeme;
 				++currentOp;
@@ -1352,9 +1366,11 @@ void parseASM() {
 				++currentOp;
 			} else {
 				node->op3 = token->lexeme;
-			}
+			}*/
 		}
 	}
+	
+	node->type = operands;
 	
 	expect(RPAREN);
 	
@@ -1370,10 +1386,9 @@ void parseReturn() {
 	if (peek(1) == NUM) {
 		expect(NUM);
 		
-		node->type = "mov";
+		node->type = "push";
 		node->tabCount = tabCount;
 		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
-		node->op2 = "acc";
 		newNode();
 		
 		
@@ -1424,7 +1439,7 @@ void parseReturn() {
 				
 				//fetch the value being accessed
 				node->tabCount = tabCount;
-				node->type = "ld";
+				node->type = "push";
 				node->op1 = "c";
 				node->op2 = "+";
 				node->op3 = getOp("$", 1, getAddressString(address));
@@ -1434,7 +1449,7 @@ void parseReturn() {
 			expect(RBRACKET);
 			
 			} else {
-				node->type = "ld";
+				node->type = "push";
 				node->tabCount = tabCount;
 				node->op1 = getOp("$", 1, getAddressString(address));
 				newNode();
@@ -1442,10 +1457,6 @@ void parseReturn() {
 			
 	}
 	
-	node->type = "push";
-	node->tabCount = tabCount;
-	node->op1 = "acc";
-	newNode();
 	
 	node->type = "ret";
 	node->tabCount = tabCount;

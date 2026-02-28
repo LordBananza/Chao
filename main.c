@@ -53,28 +53,28 @@ int main (int argc , char* argv[]) {
 	
 	//Interrupt Vectors
 	//TODO finish these interrupts' instructions
-	fprintf(output, "\t.org $00\n\t;; Reset Signal\n\n");
+	fprintf(output, "\t.org $00\n\t;; Reset Signal\n\tjmpf main\n\n");
 	
-	fprintf(output, "\t.org $03\n\t;; INT0 interrupt\n\n");
+	fprintf(output, "\t.org $03\n\t;; INT0 interrupt\n\treti\n\n");
 	
-	fprintf(output, "\t.org $0b\n\t;; INT1 interrupt\n\n");
+	fprintf(output, "\t.org $0b\n\t;; INT1 interrupt\n\treti\n\n");
 	
-	fprintf(output, "\t.org $13\n\t;; INT2 interrupt or T0L (timer) overflow\n\n");
+	fprintf(output, "\t.org $13\n\t;; INT2 interrupt or T0L (timer) overflow\n\treti\n\n");
 	
-	fprintf(output, "\t.org $1b\n\t;; INT3 interrupt or Base Timer overflow\n\n");
+	fprintf(output, "\t.org $1b\n\t;; INT3 interrupt or Base Timer overflow\n\tnot1 ext, 0\n\tjmpf $130\n\treti\n\n");
 	
-	fprintf(output, "\t.org $23\n\t;; T0H (timer) overflow\n\n");
+	fprintf(output, "\t.org $23\n\t;; T0H (timer) overflow\n\treti\n\n");
 	
-	fprintf(output, "\t.org $2b\n\t;; T1H or T1L overflow\n\tnot1 ext, 0\n\tjmpf $130\n\n");
+	fprintf(output, "\t.org $2b\n\t;; T1H or T1L overflow\n\treti\n\n");
 	
 	//TODO finish these interrupts' descriptions and instructions
-	fprintf(output, "\t.org $33\n\n");
+	fprintf(output, "\t.org $33\n\t;; SIO0 Interrupt\n\treti\n\n");
 	
-	fprintf(output, "\t.org $3b\n\n");
+	fprintf(output, "\t.org $3b\n\t;; SIO1 Interrupt\n\treti\n\n");
 	
-	fprintf(output, "\t.org $43\n\n");
+	fprintf(output, "\t.org $43\n\t;; RFB Interrupt\n\treti\n\n");
 	
-	fprintf(output, "\t.org $4b\n\n");
+	fprintf(output, "\t.org $4b\n\t;; P3 Interrupt\n\treti\n\n");
 	
 	
 	
@@ -123,7 +123,7 @@ int main (int argc , char* argv[]) {
 	fprintf(output, "\t.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00\n");
 	fprintf(output, "\t.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00\n");
 	
-	fprintf(output, "\t;Start of code\n\t.org\t$480\n\n");
+	fprintf(output, "\n\n\t;Start of code\n\t.org\t$480\n\n");
 	
 	int count = 1;
 	while (frontInstruction->next->next != NULL) {
