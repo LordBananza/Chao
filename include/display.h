@@ -117,3 +117,8 @@ void fillScreenSlow() {
 	
 	return;
 }
+
+void drawScreen(char headLow, char headHigh) {
+	/*TODO get high and low bytes of ROM address in pointers.h*/
+	return;
+}

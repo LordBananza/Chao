@@ -27,6 +27,8 @@ int ifNumber;
 int whileNumber;
 char ifOrWhile;
 
+char firstParse = 1;
+
 char* getAddressString(unsigned char address) {
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "%x", address);
@@ -73,9 +75,11 @@ IDName* findID (char* ID) {
 	IDName* tracer = IDNames;
 	
 	while (tracer != NULL) {
-		if (strcmp(tracer->name, ID) == 0) {return tracer;}
+		printf("%s\n", tracer->name);
+		if (strcmp(tracer->name, ID) == 0) {printf("(early end)\n\n"); return tracer;}
 		tracer = tracer->next;
 	}
+	printf("\n");
 	
 	return NULL;
 }
@@ -98,9 +102,11 @@ char* getOp(char* header, int headerSize, char* string) {
 char IDInUse(char* id) {
 	IDName* tracer = IDNames;
 	while (tracer != NULL) {
-		if (strcmp(tracer->name, id) == 0) {return 1;}
+		printf("%s\n", tracer->name);
+		if (strcmp(tracer->name, id) == 0) {printf("(early end)\n\n"); return 1;}
 		tracer = tracer->next;
 	}
+	printf("\n");
 	return 0;
 
 }
@@ -236,7 +242,11 @@ void parseParameter() {
 		expect(RBRACKET);
 	}
 	
-	IDName* id = findID(name);
+	IDName* idSample = findID(name);
+	
+	IDName* id = (IDName*) malloc(sizeof(IDName));
+	strncpy(id->name, idSample->name, 1024);
+	id->address = idSample->address;
 	
 	id->next = parameters;
 	id->index = offset;
@@ -860,19 +870,6 @@ void parseCall() {
 		printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
 		exit(-1);
 	}
-	if (peek(1) == LBRACKET) {
-			expect(LBRACKET);
-			if (peek(1) == NUM) {
-				expect(NUM);
-			} else if (peek(1) == ID) {
-				expect(ID);
-				if (IDInUse(token->lexeme) == 0) {
-					printf("ERROR: variable/function \"%s\" is referenced but never declared\n", token->lexeme);
-					exit(-1);
-				}
-			}
-			expect(RBRACKET);
-			}
 
 	expect(LPAREN);
 
@@ -1341,7 +1338,7 @@ void parseASM() {
 	
 	strncpy(operands, token->lexeme, 1024);
 	strcat(operands, " ");
-	printf("%s\n", operands);
+	//printf("%s\n", operands);
 	
 	if (peek(1) == EQUAL) {
 		expect(EQUAL);
@@ -1357,7 +1354,7 @@ void parseASM() {
 		while (peek(1) != RPAREN) {
 			expect(peek(1));
 			strcat(operands, token->lexeme);
-			printf("%s\n", operands);
+			//printf("%s\n", operands);
 			
 			/*expect(peek(1));
 			if(currentOp == 1) {
@@ -1573,6 +1570,8 @@ void parseFunctionList() {
 void parseInclude() {
 	char languageLibrary = 1;
 	
+	firstParse = 0;
+	
 	expect(POUND);
 	expect(INCLUDE);
 		
@@ -1616,6 +1615,9 @@ void parseInclude() {
 			tracer = tracer->next;
 		}
 		
+		printf("\nchecking for IDs:\n");
+		char x = IDInUse("dummy");
+		
 		token = mainToken;
 		lead = mainNode;
 		tracer->next = includeInstruction;
@@ -1652,11 +1654,15 @@ Instruction* parseTokens(Token* head) {
 	ifNumber = 0;
 	whileNumber = 0;
 	
+	if (firstParse != 0) {
+	
 	IDNames = (IDName*) malloc(sizeof(IDName));
+	
 	for (int i = 0; i < 255; ++i) {
 		addresses[i] = 0;
 	}
-
+	}
+	
 	//printf("Start of parser\n");
 	if (peek(1) == POUND) {parseIncludeList();}
 	

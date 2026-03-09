@@ -212,7 +212,7 @@ Token* getAllTokens(FILE *code) {
 						currToken->next = (Token*) malloc(sizeof(Token));
 						currToken = currToken->next;
 						currToken->lexeme[0] = tracer;
-						printf(" %s\n", currToken->lexeme);
+						//printf(" %s\n", currToken->lexeme);
 						j = 1;
 						} else {
 							currToken->lexeme[0] = tracer;

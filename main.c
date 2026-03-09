@@ -53,7 +53,7 @@ int main (int argc , char* argv[]) {
 	
 	//Interrupt Vectors
 	//TODO finish these interrupts' instructions
-	fprintf(output, "\t.org $00\n\t;; Reset Signal\n\tjmpf main\n\n");
+	fprintf(output, "\t.org $00\n\t;; Reset Signal\n\tclr1 ie, 7\n\tmov #$a1, ocr\n\tmov #$09, mcr\n\tmov #$80, vccr\n\tclr1 p1, 7\n\tmov #$01, p3int\n\tmov #$ff, p3\n\tset1 ie, 7\n\tjmpf main\n\n");
 	
 	fprintf(output, "\t.org $03\n\t;; INT0 interrupt\n\treti\n\n");
 	
