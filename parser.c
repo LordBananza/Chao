@@ -312,11 +312,13 @@ void parseDeclaration() {
 		
 				pushParameters();
 		
-				node->type = "call";
-				node->tabCount = tabCount;
-				node->op1 = name;
-				newNode();
+				
 			}
+			
+			node->type = "call";
+			node->tabCount = tabCount;
+			node->op1 = name;
+			newNode();
 			
 			node->type = "pop";
 			node->tabCount = tabCount;

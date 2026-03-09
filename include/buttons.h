@@ -1,3 +1,9 @@
+void popStack() {
+	/*do nothing*/
+	return;
+}
+
+
 void AButtonPressed() {
-	char a = 0;
+	char a = popStack();
 }
