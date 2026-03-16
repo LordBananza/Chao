@@ -29,6 +29,8 @@ char ifOrWhile;
 
 char firstParse = 1;
 
+int addressOffset = 0;
+
 char* getAddressString(unsigned char address) {
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "%x", address);
@@ -200,11 +202,37 @@ void pushParameters() {
 	while (tracer != NULL) {
 		node->type = "push";
 		node->tabCount = tabCount;
-		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address);
+		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address)
+		if (tracer->variable == 1) {
 		
 		node->op1 = getOp("$", 1, getAddressString(tracer->address + tracer->index));
 		newNode();
-	
+		
+		} else {
+		
+		node->type = "mov";
+		node->op1 = getOp("#<", 2, strcat(tracer->name, ","));
+		node->op2 = "acc";
+		newNode();
+		
+		node->type = "push";
+		node->op1 = "acc";
+		node->tabCount = tabCount;
+		newNode();
+		
+		node->type = "mov";
+		node->op1 = getOp("#>", 2, tracer->name);
+		node->tabCount = tabCount;
+		node->op2 = "acc";
+		newNode();
+		
+		node->type = "push";
+		node->op1 = "acc";
+		node->tabCount = tabCount;
+		newNode();
+		}
+		
+		
 		tracer = tracer->next;
 	}
 }
@@ -244,9 +272,15 @@ void parseParameter() {
 	
 	IDName* idSample = findID(name);
 	
+	//Create copy of each ID struct, so the original is unaffected 
+	
 	IDName* id = (IDName*) malloc(sizeof(IDName));
 	strncpy(id->name, idSample->name, 1024);
 	id->address = idSample->address;
+	id->memAddress = idSample->memAddress;
+	id->variable = idSample->variable;
+	id->index = idSample->index;
+	id->arguments = idSample->arguments;
 	
 	id->next = parameters;
 	id->index = offset;
@@ -325,7 +359,7 @@ void parseDeclaration() {
 				
 			}
 			
-			node->type = "call";
+			node->type = "callf";
 			node->tabCount = tabCount;
 			node->op1 = name;
 			newNode();
@@ -441,6 +475,7 @@ void parseDeclaration() {
 void parseAssignment() {
 
 	char mulOrDiv = 0;
+	char op2IsNum = 0;
 
 	expect(ID);
 	if (IDInUse(token->lexeme) == 0) {
@@ -494,7 +529,7 @@ void parseAssignment() {
 		
 				pushParameters();
 		
-				node->type = "call";
+				node->type = "callf";
 				node->tabCount = tabCount;
 				node->op1 = name;
 				newNode();
@@ -756,7 +791,7 @@ void parseAssignment() {
 			
 		} else {
 			
-			op2 = getOp("#$", 2, getAddressString(address));
+			op2 = getOp("$", 1, getAddressString(address));
 			
 		}
 			
@@ -765,6 +800,7 @@ void parseAssignment() {
 		
 		node->tabCount = tabCount;
 		op2 = getOp("#", 1, token->lexeme);
+		op2IsNum = 1;
 		
 		
 	}
@@ -777,11 +813,20 @@ void parseAssignment() {
 		node->tabCount = tabCount;
 		node->op1 = "c"; 
 		newNode();
-	
+		
+		if (op2IsNum == 0) {
 		node->type = "ld";
 		node->tabCount = tabCount;
 		node->op1 = op2;
 		newNode();
+		} else {
+		node->type = "mov";
+		node->tabCount = tabCount;
+		op2 = strcat(op2, ",");
+		node->op1 = op2;
+		node->op2 = "acc";
+		newNode();
+		}
 		
 		node->type = "st";
 		node->op1 = "b";
@@ -882,7 +927,7 @@ void parseCall() {
 		
 	}
 	
-	node->type = "call";
+	node->type = "callf";
 	node->tabCount = tabCount;
 	node->op1 = name;
 	newNode();
@@ -1329,14 +1374,25 @@ void parseASM() {
 	
 	expect(LPAREN);
 	
+	char period = 0;
+	
 	//Instruction
+	if (peek(1) == 0) {
+		expect(NUM);
+		period = 1;
+	}
+	
 	expect(ID);
 	node->type = token->lexeme;
+	if (period == 1) {
+		node->type = getOp(".", 1, token->lexeme);
+		printf("\n\nHERE: %s\n\n", node->type);
+	}
 	node->tabCount = tabCount;
 	
 	char* operands = (char*) malloc(1024);
 	
-	strncpy(operands, token->lexeme, 1024);
+	strncpy(operands, node->type, 1024);
 	strcat(operands, " ");
 	//printf("%s\n", operands);
 	
@@ -1456,6 +1512,20 @@ void parseReturn() {
 			
 	}
 	
+	node->type = "push";
+	char* addr = (char*) malloc(4);
+	sprintf(addr, "$%x", 0x35 + addressOffset - 4);
+	node->op1 = addr;
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "push";
+	char* addr2 = (char*) malloc(4);
+	sprintf(addr2, "$%x", 0x35 + addressOffset - 5);
+	node->op1 = addr2;
+	node->tabCount = 1;
+	newNode();
+	
 	
 	node->type = "ret";
 	node->tabCount = tabCount;
@@ -1527,6 +1597,7 @@ void parseFunction() {
 
 	expect(ID);
 	addID(token->lexeme, 0, 0);
+	char* functionName = token->lexeme;
 	IDName* prevIDNames = IDNames;
 	
 	node->type = strcat(token->lexeme, ":");
@@ -1538,6 +1609,25 @@ void parseFunction() {
 	node = node->next;
 	
 	expect(LPAREN);
+	
+	//Store return addrrss in memory
+	//printf("functionName = %s\n", functionName);
+	if (strcmp(functionName, "main:") != 0) {
+	node->type = "pop";
+	char* addr = (char*) malloc(4);
+	sprintf(addr, "$%x", 0x32 + addressOffset++);
+	node->op1 = addr;
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "pop";
+	char* addr2 = (char*) malloc(4);
+	sprintf(addr2, "$%x", 0x32 + addressOffset++);
+	node->op1 = addr2;
+	node->tabCount = 1;
+	newNode();
+	
+	}
 
 	parseArgumentList();
 

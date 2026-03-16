@@ -5,5 +5,6 @@ void popStack() {
 
 
 void AButtonPressed() {
-	char a = popStack();
+	char a = popStack(popStack);
+	return;
 }
