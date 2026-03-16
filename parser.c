@@ -31,6 +31,8 @@ char firstParse = 1;
 
 int addressOffset = 0;
 
+char data = 0;
+
 char* getAddressString(unsigned char address) {
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "%x", address);
@@ -212,24 +214,15 @@ void pushParameters() {
 		
 		node->type = "mov";
 		node->op1 = getOp("#<", 2, strcat(tracer->name, ","));
-		node->op2 = "acc";
-		newNode();
-		
-		node->type = "push";
-		node->op1 = "acc";
-		node->tabCount = tabCount;
+		node->op2 = "trl";
 		newNode();
 		
 		node->type = "mov";
 		node->op1 = getOp("#>", 2, tracer->name);
 		node->tabCount = tabCount;
-		node->op2 = "acc";
+		node->op2 = "trh";
 		newNode();
 		
-		node->type = "push";
-		node->op1 = "acc";
-		node->tabCount = tabCount;
-		newNode();
 		}
 		
 		
@@ -1512,6 +1505,8 @@ void parseReturn() {
 			
 	}
 	
+	if (data == 0) {
+	
 	node->type = "push";
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "$%x", 0x35 + addressOffset - 4);
@@ -1530,6 +1525,8 @@ void parseReturn() {
 	node->type = "ret";
 	node->tabCount = tabCount;
 	newNode();
+	
+	}
 	
 	expect(SEMICOLON);
 }
@@ -1593,7 +1590,12 @@ void parseFunction() {
 	//Allows for scoping of variables by separating IDNames within each
 	//function/set of brackets from those outside of it
 	
+	
 	expect(TYPE);
+	
+	if (strcmp(token->lexeme, "data") == 0) {
+		data = 1;
+	}
 
 	expect(ID);
 	addID(token->lexeme, 0, 0);
@@ -1612,7 +1614,7 @@ void parseFunction() {
 	
 	//Store return addrrss in memory
 	//printf("functionName = %s\n", functionName);
-	if (strcmp(functionName, "main:") != 0) {
+	if (strcmp(functionName, "main:") != 0 && data == 0) {
 	node->type = "pop";
 	char* addr = (char*) malloc(4);
 	sprintf(addr, "$%x", 0x32 + addressOffset++);
@@ -1640,6 +1642,8 @@ void parseFunction() {
 	
 	node->next = (Instruction*) malloc(sizeof(Instruction));
 	node = node->next;
+	
+	data = 0;
 	
 	//Restore scope to previous condition
 	IDNames = prevIDNames;
