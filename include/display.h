@@ -124,6 +124,9 @@ void drawScreen() {
 	
 	asm(clr1 ocr,5);
 	
+	asm(pop trh);
+	asm(pop trl);
+	
 	count = 0;
 	char rowCount = 0;
 	

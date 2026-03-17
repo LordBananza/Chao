@@ -212,15 +212,27 @@ void pushParameters() {
 		
 		} else {
 		
+		//Low byte
 		node->type = "mov";
 		node->op1 = getOp("#<", 2, strcat(tracer->name, ","));
-		node->op2 = "trl";
+		node->op2 = "acc";
 		newNode();
 		
+		node->type = "push";
+		node->tabCount = tabCount;
+		node->op1 = "acc";
+		newNode();
+		
+		//High byte
 		node->type = "mov";
 		node->op1 = getOp("#>", 2, tracer->name);
 		node->tabCount = tabCount;
-		node->op2 = "trh";
+		node->op2 = "acc";
+		newNode();
+		
+		node->type = "push";
+		node->tabCount = tabCount;
+		node->op1 = "acc";
 		newNode();
 		
 		}
@@ -522,11 +534,13 @@ void parseAssignment() {
 		
 				pushParameters();
 		
-				node->type = "callf";
-				node->tabCount = tabCount;
-				node->op1 = name;
-				newNode();
+				
 			}
+			
+			node->type = "callf";
+			node->tabCount = tabCount;
+			node->op1 = name;
+			newNode();
 			
 			node->type = "pop";
 			node->tabCount = tabCount;
@@ -1434,9 +1448,15 @@ void parseReturn() {
 	if (peek(1) == NUM) {
 		expect(NUM);
 		
-		node->type = "push";
+		node->type = "mov";
 		node->tabCount = tabCount;
 		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
+		node->op2 = "acc";
+		newNode();
+		
+		node->type = "push";
+		node->tabCount = tabCount;
+		node->op1 = "acc";
 		newNode();
 		
 		

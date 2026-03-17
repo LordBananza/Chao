@@ -46,6 +46,15 @@ void main() {
 	drawScreen(introScreen);
 	
 	while (1) {
+	
+		x = buttonAPressed();
+		
+		if (x) {
+			clearScreenSlow();
+			drawScreen(introScreen);	
+			
+		}
+		
 		x = 0;
 	}
 	
