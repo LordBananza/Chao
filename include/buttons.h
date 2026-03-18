@@ -1,21 +1,34 @@
+char fromStack;
+
 void popStack() {
-	/*do nothing*/
+	/*This function does nothing and returns nothing; its purpose is to allow a register value to
+	be interactable by a Chao variable*/
 	return;
 }
 
 
 void buttonAPressed() {
 
-	/*Collect value from p3, then AND them to only look at bit 5 (A button)
-	If bit 5 is 0, A is pressed, return 1
-	Otherwise, return 0*/
-
 	asm(ld p3);
 	asm(and #$10);
 	asm(push acc);
-	char a = popStack();
+	fromStack = popStack();
 	
-	if (a == 0) {
+	if (fromStack == 0) {
+		return 1;
+	}
+	
+	return 0;
+}
+
+void buttonBPressed() {
+
+	asm(ld p3);
+	asm(and #$20);
+	asm(push acc);
+	fromStack = popStack();
+	
+	if (fromStack == 0) {
 		return 1;
 	}
 	
