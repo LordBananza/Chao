@@ -1156,7 +1156,7 @@ void parseComp() {
 		
 		node->type = "clr1";
 		node->tabCount = tabCount;
-		node->op1 = "acc,";
+		node->op1 = "psw,";
 		node->op2 = "cy";
 		newNode();
 		
@@ -1171,7 +1171,7 @@ void parseComp() {
 			//check if op2 < op1 (also a fail)
 			node->type = "bpc";
 			node->tabCount = tabCount;
-			node->op1 = "acc,";
+			node->op1 = "psw,";
 			node->op2 = "cy,";
 			
 			
@@ -1197,7 +1197,7 @@ void parseComp() {
 			//check if op1 < op2 (also a failure)
 			node->type = "bpc";
 			node->tabCount = tabCount;
-			node->op1 = "acc,";
+			node->op1 = "psw,";
 			node->op2 = "cy,";
 			
 
@@ -1224,7 +1224,7 @@ void parseComp() {
 			//Check if less than bit is on (also success)
 			node->type = "bpc";
 			node->tabCount = tabCount;
-			node->op1 = "acc,";
+			node->op1 = "psw,";
 			node->op2 = "cy,";
 			node->op3 = success;
 			newNode();
@@ -1261,7 +1261,7 @@ void parseComp() {
 			//Check if less than bit is on (failure)
 			node->type = "bpc";
 			node->tabCount = tabCount;
-			node->op1 = "acc,";
+			node->op1 = "psw,";
 			node->op2 = "cy,";
 			node->op3 = subBranch;
 			newNode();

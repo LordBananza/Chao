@@ -1,6 +1,18 @@
 #include <buttons.h>
 #include <display.h>
 
+data Omochao() {
+	asm(.byte %00000001,%10000000);
+	asm(.byte %01111111,%11111110);
+	asm(.byte %00000001,%10000000);
+	asm(.byte %00000110,%01100000);
+	asm(.byte %00001100,%00110000);
+	asm(.byte %00001101,%10110000);
+	asm(.byte %00001100,%00110000);
+	asm(.byte %00000011,%11000000);
+
+}
+
 data introScreen() {
 
 	asm(.byte %00000000,%00000000,%00000000,%01000000,%00000000,%00000000);
@@ -51,15 +63,25 @@ void main() {
 		
 		if (x) {
 			clearScreenSlow();
-			x = 1;
 			
-			while (x < 250) {
-				x = x + 1;
-			}
+			x = 16;
+			char y = 10;
+			char length = 16;
+			char height = 8;
 			
-			drawScreen(introScreen);	
+			draw(x, y, length, height, Omochao);
 			
 		}
+		
+		
+		
+		/*if (9 <= 9) {
+			clearScreenSlow();
+		}
+		
+		if (9 < 8) {
+			fillScreenSlow();
+		}*/
 		
 		x = buttonBPressed();
 		if (x) {
