@@ -185,7 +185,6 @@ void drawScreen() {
 
 void drawLine(char xCoord, char yCoord, char length) {
 	
-	asm(clr1 ocr, 5);
 	
 	asm(pop trh);
 	asm(pop trl);
@@ -200,10 +199,18 @@ void drawLine(char xCoord, char yCoord, char length) {
 	count = 0;
 	asm(mov #$80, 2);
 	
-	while (count < xCoord) {
+	xCoord = xCoord/8;
+	pushStack(xCoord);
+	
+	asm(pop b);
+	asm(ld 2);
+	asm(add b);
+	asm(st 2);	
+	
+	/*while (count < xCoord) {
 		asm(inc 2);
 		count = count + 8;
-	}
+	}*/
 	
 	length = length/8;
 	
@@ -212,60 +219,76 @@ void drawLine(char xCoord, char yCoord, char length) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord - 1;
 	}
 	
 	if (yCoord == 3) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord - 1;
 	}
 	
 	if (yCoord == 5) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord -1;
 	}
 	
 	if (yCoord == 7) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord -1;
 	}
 	
 	if (yCoord == 9) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord -1;
 	}
 	
 	if (yCoord == 11) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord -1;
 	}
 	
 	if (yCoord == 13) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord -1;
 	}
 	
 	if (yCoord == 15) {
 		asm(ld 2);
 		asm(add #$6);
 		asm(st 2);
+		yCoord = yCoord -1;
 	}
 	
 	count = 1;
 	
-	while (count < yCoord) {
+	yCoord = yCoord*8;
+	pushStack(yCoord);
+	
+	asm(pop b);
+	asm(ld 2);
+	asm(add b);
+	asm(st 2);	
+	
+	/*while (count < yCoord) {
 	
 		asm(ld 2);
 		asm(add #$10);
 		asm(st 2);
 		count = count + 2;
 		
-	}
+	}*/
 	
 	
 	count = 0;
@@ -283,12 +306,13 @@ void drawLine(char xCoord, char yCoord, char length) {
 			count = count + 1;
 	}
 		
-	asm(set1 ocr, 5);
 	
 	return;
 }
 
 void draw(char xCoord, char yCoord, char length, char height, char trh, char trl) {
+	
+	asm(clr1 ocr, 5);
 	
 	char end = yCoord;
 	end = end + height;
@@ -303,6 +327,8 @@ void draw(char xCoord, char yCoord, char length, char height, char trh, char trl
 		yCoord = yCoord + 1;
 		trl = trl + bytes;
 	}
+	
+	asm(set1 ocr, 5);
 
 	return;
 }
