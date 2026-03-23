@@ -13,6 +13,18 @@ data Omochao() {
 
 }
 
+data noChao() {
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+	asm(.byte %00000000,%00000000);
+
+}
+
 data introScreen() {
 
 	asm(.byte %00000000,%00000000,%00000000,%01000000,%00000000,%00000000);
@@ -50,49 +62,115 @@ data introScreen() {
 	return;
 }
 
+
+char x;
+char y;
+char length;
+char height;
+char button;
+
+
+void checkDPad() {
+
+			char oldX = x;
+			char oldY = y;
+			
+			button = buttonUpPressed();
+			
+			if (button) {
+				y = y - 1;
+			}
+			
+			button = buttonDownPressed();
+			
+			if (button) {
+				y = y + 1;
+			}
+			
+
+		
+
+		
+			
+			button = buttonLeftPressed();
+			
+			if (button) {
+				x = x - 8;
+			}
+			
+			button = buttonRightPressed();
+			
+			if (button) {
+				x = x + 8;
+			}
+			
+			if (oldX == x) {
+			if (oldY == y) {
+			
+			return;
+			}
+			asm(nop);
+			}
+			draw(oldX, oldY, length, height, noChao);
+			draw(x, y, length, height, Omochao);
+		
+		return;
+
+
+}
+
 void main() {
-	char x;
+
+	char mainMode = 0;
+
+	x = 16;
+	y = 10;
+	length = 16;
+	height = 8;
 	
 	clearScreen();
 	
 	drawScreen(introScreen);
 	
 	while (1) {
-	
-		x = buttonAPressed();
 		
-		if (x) {
+		if (mainMode == 0) {
+		button = buttonAPressed();
+		
+		
+		if (button) {
 			clearScreenSlow();
+			mainMode = 1;
 			
 			x = 16;
-			char y = 10;
-			char length = 16;
-			char height = 8;
+			y = 10;
+			length = 16;
+			height = 8;
 			
 			draw(x, y, length, height, Omochao);
 			
 		}
-		
-		
-		
-		/*if (9 <= 9) {
-			clearScreenSlow();
+		asm(nop);
 		}
 		
-		if (9 < 8) {
-			fillScreenSlow();
-		}*/
+		if (mainMode == 1) {
+			
+			checkDPad();
+			
 		
-		x = buttonBPressed();
-		if (x) {
+		}
+		
+		button = buttonBPressed();
+		if (button) {
 			fillScreenSlow();
 			drawScreen(introScreen);
+			mainMode = 0;
 		}
 		
-		x = 0;
+		asm(nop);
 	}
 	
-	x = 1;
+	button = 1;
 
 }
 
