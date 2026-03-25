@@ -167,7 +167,7 @@ void main() {
 			mainMode = 0;
 		}
 		
-		asm(nop);
+		buttonModePressed();
 	}
 	
 	button = 1;
