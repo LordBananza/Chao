@@ -1,0 +1,12 @@
+char x2;
+
+char test (char zap) {
+char x = 5;
+x = x + 5;
+asm (add #10);
+asm(sub $4c $10 order);
+}
+
+char test2 () {
+char x = 200;
+}

@@ -1,0 +1,14 @@
+#include <display.h>
+
+void main() {
+
+	while (1) {
+	
+		clearScreenSlow();
+		fillScreenSlow();
+	
+	}
+	
+	return;
+
+} 

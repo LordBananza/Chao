@@ -1,0 +1,4 @@
+char testFunc (char input, char input2) {
+	input = input + input2;
+	return input;
+}

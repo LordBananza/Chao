@@ -5,38 +5,64 @@
 
 	.org $00
 	;; Reset Signal
+	clr1 ie, 7
+	mov #$a1, ocr
+	mov #$09, mcr
+	mov #$80, vccr
+	clr1 p3int, 0
+	clr1 p1, 7
+	mov #$ff, p3
+	set1 ie, 7
+	jmpf main
 
 	.org $03
 	;; INT0 interrupt
+	reti
 
 	.org $0b
 	;; INT1 interrupt
+	reti
 
 	.org $13
 	;; INT2 interrupt or T0L (timer) overflow
+	reti
 
 	.org $1b
 	;; INT3 interrupt or Base Timer overflow
+	not1 ext, 0
+	jmpf $130
+	.org $139
+	reti
 
 	.org $23
 	;; T0H (timer) overflow
+	reti
 
 	.org $2b
 	;; T1H or T1L overflow
-	not1 ext, 0
-	jmpf $130
+	reti
 
 	.org $33
+	;; SIO0 Interrupt
+	reti
 
 	.org $3b
+	;; SIO1 Interrupt
+	reti
 
 	.org $43
+	;; RFB Interrupt
+	reti
 
 	.org $4b
+	;; P3 Interrupt (Keys are pressed)
+	clr1 p3int, 1
+	clr1 p3int, 0
+	reti
 
 	.org $200
 	;; Short File Description (Put your own 16-character description below)
-	.byte "Game by Chao    "
+	.byte "Made with Chao  "
 
 	.org $210
 	;; Long File Description (Put your own 32-character description below)
@@ -85,46 +111,866 @@
 	.byte $00,$00,$11,$11,$01,$10,$01,$10,$10,$00,$00,$01,$00,$11,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+
+
 	;Start of code
 	.org	$480
 
-main2:
-	pop $0
-	pop $1
-	ld $0
-	add #5
-	st $0
-	ld $0
+
+popStack:
+	pop $32
+	pop $33
+	push $33
+	push $32
+	ret
+
+buttonAPressed:
+	pop $34
+	pop $35
+	ld p3
+	and #$10
 	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if0
+	mov #1, acc
+	push acc
+	push $35
+	push $34
+	ret
+.if0: mov #0, acc
+	push acc
+	push $35
+	push $34
+	ret
+
+buttonBPressed:
+	pop $36
+	pop $37
+	ld p3
+	and #$20
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if1
+	mov #1, acc
+	push acc
+	push $37
+	push $36
+	ret
+.if1: mov #0, acc
+	push acc
+	push $37
+	push $36
+	ret
+
+buttonUpPressed:
+	pop $38
+	pop $39
+	ld p3
+	and #$1
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if2
+	mov #1, acc
+	push acc
+	push $39
+	push $38
+	ret
+.if2: mov #0, acc
+	push acc
+	push $39
+	push $38
+	ret
+
+buttonDownPressed:
+	pop $3a
+	pop $3b
+	ld p3
+	and #$2
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if3
+	mov #1, acc
+	push acc
+	push $3b
+	push $3a
+	ret
+.if3: mov #0, acc
+	push acc
+	push $3b
+	push $3a
+	ret
+
+buttonLeftPressed:
+	pop $3c
+	pop $3d
+	ld p3
+	and #$4
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if4
+	mov #1, acc
+	push acc
+	push $3d
+	push $3c
+	ret
+.if4: mov #0, acc
+	push acc
+	push $3d
+	push $3c
+	ret
+
+buttonRightPressed:
+	pop $3e
+	pop $3f
+	ld p3
+	and #$8
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if5
+	mov #1, acc
+	push acc
+	push $3f
+	push $3e
+	ret
+.if5: mov #0, acc
+	push acc
+	push $3f
+	push $3e
+	ret
+
+buttonModePressed:
+	pop $40
+	pop $41
+	ld p3
+	and #$40
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if6
+	not1 ext,0
+	jmpf $1f0
+.if6: push $41
+	push $40
+	ret
+
+buttonSleepPressed:
+	pop $42
+	pop $43
+	ld p3
+	and #$80
+	push acc
+	callf popStack
+	pop $80
+	ld $80
+	st b
+	mov #0, acc
+	bne b, .if7
+	mov #1, acc
+	push acc
+	push $43
+	push $42
+	ret
+.if7: mov #0, acc
+	push acc
+	push $43
+	push $42
+	ret
+
+
+pushStack:
+	pop $44
+	pop $45
+	push $45
+	push $44
+	ret
+
+clearScreen:
+	pop $46
+	pop $47
+	mov #0, acc
+	st $81
+	clr1 ocr,5
+	mov #0,xbnk
+	mov #$80,2
+.start0: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while0
+	bpc psw, cy, .while0
+	mov #$00,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start0
+.while0: mov #0, acc
+	st $81
+	mov #$80,2
+	mov #1,xbnk
+.start1: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while1
+	bpc psw, cy, .while1
+	mov #$00,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start1
+.while1: set1 ocr,5
+	push $47
+	push $46
+	ret
+
+fillScreen:
+	pop $48
+	pop $49
+	mov #0, acc
+	st $81
+	clr1 ocr,5
+	mov #0,xbnk
+	mov #$80,2
+.start2: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while2
+	bpc psw, cy, .while2
+	mov #$ff,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start2
+.while2: mov #0, acc
+	st $81
+	mov #$80,2
+	mov #1,xbnk
+.start3: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while3
+	bpc psw, cy, .while3
+	mov #$ff,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start3
+.while3: set1 ocr,5
+	push $49
+	push $48
+	ret
+
+clearScreenSlow:
+	pop $4a
+	pop $4b
+	mov #0, acc
+	st $81
+	mov #0,xbnk
+	mov #$80,2
+.start4: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while4
+	bpc psw, cy, .while4
+	mov #$00,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start4
+.while4: mov #0, acc
+	st $81
+	mov #$80,2
+	mov #1,xbnk
+.start5: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while5
+	bpc psw, cy, .while5
+	mov #$00,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start5
+.while5: push $4b
+	push $4a
+	ret
+
+fillScreenSlow:
+	pop $4c
+	pop $4d
+	mov #0, acc
+	st $81
+	mov #0,xbnk
+	mov #$80,2
+.start6: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while6
+	bpc psw, cy, .while6
+	mov #$ff,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start6
+.while6: mov #0, acc
+	st $81
+	mov #$80,2
+	mov #1,xbnk
+.start7: ld $81
+	st b
+	mov #124, acc
+	clr1 psw, cy
+	be b, .while7
+	bpc psw, cy, .while7
+	mov #$ff,@R2
+	inc 2
+	ld $81
+	add #1
+	st $81
+	br .start7
+.while7: push $4d
+	push $4c
+	ret
+
+drawScreen:
+	pop $4e
+	pop $4f
+	clr1 ocr,5
+	pop trh
+	pop trl
+	mov #0, acc
+	st $81
+	mov #0, acc
+	st $82
+	mov #0,xbnk
+	mov #$80,2
+	mov #0,3
+.start8: ld $82
+	st b
+	mov #8, acc
+	clr1 psw, cy
+	be b, .while8
+	bpc psw, cy, .while8
+	mov #0, acc
+	st $81
+.start9: ld $81
+	st b
+	mov #12, acc
+	clr1 psw, cy
+	be b, .while9
+	bpc psw, cy, .while9
+	ld 3
+	ldc 
+	st @R2
+	inc 2
+	inc 3
+	ld $81
+	add #1
+	st $81
+	br .start9
+.while9: ld 2
+	add #4
+	st 2
+	ld $82
+	add #1
+	st $82
+	br .start8
+.while8: mov #1,xbnk
+	mov #$80,2
+	mov #0, acc
+	st $82
+.starta: ld $82
+	st b
+	mov #8, acc
+	clr1 psw, cy
+	be b, .whilea
+	bpc psw, cy, .whilea
+	mov #0, acc
+	st $81
+.startb: ld $81
+	st b
+	mov #12, acc
+	clr1 psw, cy
+	be b, .whileb
+	bpc psw, cy, .whileb
+	ld 3
+	ldc 
+	st @R2
+	inc 2
+	inc 3
+	ld $81
+	add #1
+	st $81
+	br .startb
+.whileb: ld 2
+	add #4
+	st 2
+	ld $82
+	add #1
+	st $82
+	br .starta
+.whilea: set1 ocr,5
+	push $4f
+	push $4e
+	ret
+
+drawLine:
+	pop $50
+	pop $51
+	pop $83
+	pop $84
+	pop $85
+	pop trh
+	pop trl
+	mov #0,xbnk
+	ld $84
+	st b
+	mov #15, acc
+	clr1 psw, cy
+	st c
+	ld b
+	be c, .if0
+	bpc psw, cy, .if0
+	mov #1,xbnk
+	ld $84
+	sub #16
+	st $84
+.if0: mov #0, acc
+	st $81
+	mov #$80,2
+	ld $83
+	st c
+	mov #8, acc
+	st b
+	div
+	ld c
+	st $83
+	push $83
+	callf pushStack
+	pop b
+	ld 2
+	add b
+	st 2
+	ld $85
+	st c
+	mov #8, acc
+	st b
+	div
+	ld c
+	st $85
+	ld $84
+	st b
+	mov #1, acc
+	bne b, .if1
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if1: ld $84
+	st b
+	mov #3, acc
+	bne b, .if2
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if2: ld $84
+	st b
+	mov #5, acc
+	bne b, .if3
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if3: ld $84
+	st b
+	mov #7, acc
+	bne b, .if4
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if4: ld $84
+	st b
+	mov #9, acc
+	bne b, .if5
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if5: ld $84
+	st b
+	mov #11, acc
+	bne b, .if6
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if6: ld $84
+	st b
+	mov #13, acc
+	bne b, .if7
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if7: ld $84
+	st b
+	mov #15, acc
+	bne b, .if8
+	ld 2
+	add #$6
+	st 2
+	ld $84
+	sub #1
+	st $84
+.if8: mov #1, acc
+	st $81
+	ld $84
+	st c
+	mov #8, acc
+	st b
+	mul
+	ld c
+	st $84
+	push $84
+	callf pushStack
+	pop b
+	ld 2
+	add b
+	st 2
+	mov #0, acc
+	st $81
+	mov #0,3
+.startc: ld $81
+	st b
+	ld $85
+	clr1 psw, cy
+	be b, .whilec
+	bpc psw, cy, .whilec
+	ld 3
+	ldc 
+	st @R2
+	inc 2
+	inc 3
+	ld $81
+	add #1
+	st $81
+	br .startc
+.whilec: push $51
+	push $50
+	ret
+
+draw:
+	pop $52
+	pop $53
+	pop $86
+	pop $87
+	pop $88
+	pop $89
+	pop $8a
+	pop $8b
+	clr1 ocr,5
+	ld $87
+	st $8c
+	ld $8c
+	add $89
+	st $8c
+	ld $88
+	st $8d
+	ld $88
+	st c
+	mov #8, acc
+	st b
+	div
+	ld c
+	st $8d
+.startd: ld $87
+	st b
+	ld $8c
+	clr1 psw, cy
+	be b, .whiled
+	bpc psw, cy, .whiled
+	push $8b
+	push $8a
+	push $88
+	push $87
+	push $86
+	callf drawLine
+	ld $87
+	add #1
+	st $87
+	ld $8b
+	add $8d
+	st $8b
+	br .startd
+.whiled: set1 ocr,5
+	push $53
+	push $52
+	ret
+
+Omochao:
+	.byte %00000001,%10000000
+	.byte %01111111,%11111110
+	.byte %00000001,%10000000
+	.byte %00000110,%01100000
+	.byte %00001100,%00110000
+	.byte %00001101,%10110000
+	.byte %00001100,%00110000
+	.byte %00000011,%11000000
+
+noChao:
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+	.byte %00000000,%00000000
+
+introScreen:
+	.byte %00000000,%00000000,%00000000,%01000000,%00000000,%00000000
+	.byte %00000000,%00000000,%00000000,%10000000,%00000000,%00000000
+	.byte %00000000,%00000000,%01000001,%00000000,%00000000,%00000000
+	.byte %00000000,%00000000,%01000010,%00100000,%00000000,%00000000
+	.byte %00000000,%00000000,%01000100,%01011000,%00000000,%00000000
+	.byte %00000000,%00000000,%01000100,%10000110,%00000000,%00000000
+	.byte %00000000,%00000000,%01000101,%10000001,%10000000,%00000000
+	.byte %00000000,%00000000,%00100110,%01000000,%00000000,%00000000
+	.byte %00000000,%00000000,%00010100,%00110000,%00000000,%00000000
+	.byte %00000000,%00000000,%00001100,%00101000,%00000000,%00000000
+	.byte %00000000,%00000000,%00000010,%01100100,%00000000,%00000000
+	.byte %00000000,%00000001,%10000001,%10100010,%00000000,%00000000
+	.byte %00000000,%00000000,%01100001,%00100010,%00000000,%00000000
+	.byte %00000000,%00000000,%00011010,%00100010,%00000000,%00000000
+	.byte %00000000,%00000000,%00000100,%01000010,%00000000,%00000000
+	.byte %00000000,%00000000,%00000000,%10000010,%00000000,%00000000
+	.byte %00000000,%00000000,%00000001,%00000000,%00000000,%00000000
+	.byte %00000000,%00000000,%00000010,%00000000,%00000000,%00000000
+	.byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000
+	.byte %00000000,%01110101,%00110001,%00001100,%11101110,%00000000
+	.byte %00000000,%01000111,%01001010,%10001000,%11100100,%00000000
+	.byte %00000000,%01000111,%01111010,%10001010,%10000100,%00000000
+	.byte %00000000,%01110101,%01001001,%00001110,%10000100,%00000000
+	.byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000
+	.byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000
+	.byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000
+	.byte %00000000,%01110111,%01110011,%00110000,%01000100,%00000000
+	.byte %00000000,%01010101,%01000100,%01000000,%10100100,%00000000
+	.byte %00000000,%01110110,%01110010,%00100000,%11100100,%00000000
+	.byte %00000000,%01000101,%01000001,%00010000,%10100000,%00000000
+	.byte %00000000,%01000101,%01110110,%01100000,%10100100,%00000000
+	.byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000
+
+checkDPad:
+	pop $54
+	pop $55
+	ld $8e
+	st $93
+	ld $8f
+	st $94
+	callf buttonUpPressed
+	pop $92
+	ld $92
+	bz .if9
+	ld $8f
+	sub #1
+	st $8f
+.if9: callf buttonDownPressed
+	pop $92
+	ld $92
+	bz .ifa
+	ld $8f
+	add #1
+	st $8f
+.ifa: callf buttonLeftPressed
+	pop $92
+	ld $92
+	bz .ifb
+	ld $8e
+	sub #8
+	st $8e
+.ifb: callf buttonRightPressed
+	pop $92
+	ld $92
+	bz .ifc
+	ld $8e
+	add #8
+	st $8e
+.ifc: ld $93
+	st b
+	ld $8e
+	be b, .ifd
+	mov #<noChao, acc
+	push acc
+	mov #>noChao, acc
+	push acc
+	push $91
+	push $90
+	push $94
+	push $93
+	callf draw
+	mov #<Omochao, acc
+	push acc
+	mov #>Omochao, acc
+	push acc
+	push $91
+	push $90
+	push $8f
+	push $8e
+	callf draw
+	push $55
+	push $54
+	ret
+.ifd: ld $94
+	st b
+	ld $8f
+	be b, .ife
+	mov #<noChao, acc
+	push acc
+	mov #>noChao, acc
+	push acc
+	push $91
+	push $90
+	push $94
+	push $93
+	callf draw
+	mov #<Omochao, acc
+	push acc
+	mov #>Omochao, acc
+	push acc
+	push $91
+	push $90
+	push $8f
+	push $8e
+	callf draw
+	push $55
+	push $54
+	ret
+.ife: push $55
+	push $54
 	ret
 
 main:
-	mov #50, acc
-	st $2
-	mov #50, acc
-	st $34
-	ld $34
+	mov #0, acc
+	st $95
+	mov #16, acc
+	st $8e
+	mov #10, acc
+	st $8f
+	mov #16, acc
+	st $90
+	mov #8, acc
+	st $91
+	callf clearScreen
+	mov #<introScreen, acc
+	push acc
+	mov #>introScreen, acc
+	push acc
+	callf drawScreen
+.starte: mov #1, acc
+	bz .whilee
+	ld $95
 	st b
-	ld $2
-	st c
-	ld b
-	st c + $3
-	ld $2
+	mov #0, acc
+	bne b, .iff
+	callf buttonAPressed
+	pop $92
+	ld $92
+	bz .if10
+	callf clearScreenSlow
+	mov #1, acc
+	st $95
+	mov #16, acc
+	st $8e
+	mov #10, acc
+	st $8f
+	mov #16, acc
+	st $90
+	mov #8, acc
+	st $91
+	mov #<Omochao, acc
+	push acc
+	mov #>Omochao, acc
+	push acc
+	push $91
+	push $90
+	push $8f
+	push $8e
+	callf draw
+.if10: nop 
+.iff: ld $95
 	st b
-	mov #100, acc
-	clr1 acc, cy
-	be b, .if0
-	bpc acc, cy, .if0
-.start0: mov #1, acc
-	bz .while0
-	ld $2
-	sub #4
-	st $2
-	br .start0
-.while0: ld $2
-	add #5
-	st $2
-.if0: push $17
-	push $2
-	call main2
-	pop $2
+	mov #1, acc
+	bne b, .if11
+	callf checkDPad
+.if11: callf buttonBPressed
+	pop $92
+	ld $92
+	bz .if12
+	callf fillScreenSlow
+	mov #<introScreen, acc
+	push acc
+	mov #>introScreen, acc
+	push acc
+	callf drawScreen
+	mov #0, acc
+	st $95
+.if12: callf buttonModePressed
+	br .starte
+.whilee: mov #1, acc
+	st $92
