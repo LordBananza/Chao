@@ -104,15 +104,19 @@ void checkDPad() {
 				x = x + 8;
 			}
 			
-			if (oldX == x) {
-			if (oldY == y) {
-			
-			return;
-			}
-			asm(nop);
-			}
+			if (oldX != x) {
 			draw(oldX, oldY, length, height, noChao);
 			draw(x, y, length, height, Omochao);
+			return;
+			}
+			
+			if (oldY != y) {
+			draw(oldX, oldY, length, height, noChao);
+			draw(x, y, length, height, Omochao);
+			return;
+			}
+
+			
 		
 		return;
 

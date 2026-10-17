@@ -74,7 +74,7 @@ int main (int argc , char* argv[]) {
 	
 	fprintf(output, "\t.org $43\n\t;; RFB Interrupt\n\treti\n\n");
 	
-	fprintf(output, "\t.org $4b\n\t;; P3 Interrupt (Keys are pressed)\n\tclr1 p3int, 1\n\tclr1 p3int, 0\n\n");/*ld p3\n\tand #$40\n\tbe 1, .eoi\n\tnot1 ext, 0\n\tjmpf $1f0\n.eoi: reti\n\n");*/
+	fprintf(output, "\t.org $4b\n\t;; P3 Interrupt (Keys are pressed)\n\tclr1 p3int, 1\n\tclr1 p3int, 0\n\treti\n\n");/*ld p3\n\tand #$40\n\tbe 1, .eoi\n\tnot1 ext, 0\n\tjmpf $1f0\n.eoi: reti\n\n");*/
 	
 	
 	
