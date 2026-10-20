@@ -105,17 +105,32 @@ void determineType (Token* token) {
 		token->type = QUOTE;
 		return;
 
-	} else if (strcmp(token->lexeme, "&&") == 0 || strcmp(token->lexeme, "||") == 0) {
+	}/* else if (strcmp(token->lexeme, "&") == 0) {
+		token->type = BAND;
+		return;
+
+	} else if (strcmp(token->lexeme, "|") == 0) {
+		token->type = BOR;
+		return;
+
+	} else if (strcmp(token->lexeme, "~") == 0) {
+		token->type = BNOT;
+		return;
+
+	} */else if (strcmp(token->lexeme, "&&") == 0 || strcmp(token->lexeme, "||") == 0) {
 		token->type = ANDOR;
 		return;
 
 	} else if (strcmp(token->lexeme, "+") == 0 || strcmp(token->lexeme, "-") == 0 || strcmp(token->lexeme, "*") == 0 ||
-			strcmp(token->lexeme, "/") == 0 || strcmp(token->lexeme, "<<") == 0 || strcmp(token->lexeme, ">>") == 0 ||
+			strcmp(token->lexeme, "/") == 0 ||
 			strcmp(token->lexeme, "&") == 0 || strcmp(token->lexeme, "|") == 0 || strcmp(token->lexeme, "^") == 0 ||
 			strcmp(token->lexeme, "~") == 0) {
 		token->type = OPERATOR;
 		return;
 
+	} else if (strcmp(token->lexeme, "<<") == 0 || strcmp(token->lexeme, ">>") == 0) {
+	        token->type = BSHIFT;
+	        return;
 	} else if (strcmp(token->lexeme, "<") == 0 || strcmp(token->lexeme, "<=") == 0 || strcmp(token->lexeme, ">") == 0 ||
 			strcmp(token->lexeme, ">=") == 0 || strcmp(token->lexeme, "==") == 0 || strcmp(token->lexeme, "!=") == 0) {
 		token->type = OPC;
@@ -158,7 +173,7 @@ Token* getAllTokens(FILE *code) {
 		while (tracer != '\0') {
 		
 
-			if (tracer == ' ' || tracer == '\t' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '^' || tracer == '/' || tracer == '*' || tracer == '~' || tracer == '\n' || tracer == '#' || tracer == '<' || tracer == '>' || tracer == '=' || tracer == '\"'|| tracer == '\"') {
+			if (tracer == ' ' || tracer == '\t' || tracer == ';' || tracer == '=' || tracer == '(' || tracer == ')' || tracer == '{' || tracer == '}' || tracer == '[' || tracer == ']' || tracer == ',' || tracer == '&' || tracer == '|' || tracer == '~' || tracer == '^' || tracer == '/' || tracer == '*' || tracer == '~' || tracer == '\n' || tracer == '#' || tracer == '<' || tracer == '>' || tracer == '=' || tracer == '\"'|| tracer == '\"') {
 
 
 				if (strcmp(currToken->lexeme, "") != 0 && tracer != '&' && tracer != '|' && tracer != '!' && tracer != '=' && tracer != '<' && tracer != '>') {
@@ -178,7 +193,7 @@ Token* getAllTokens(FILE *code) {
 					j = 0;
 
 
-				} else if (tracer == '&' || tracer == '|' || tracer == '='|| tracer == '!' || tracer == '/' || tracer == '*' || tracer == '<' || tracer == '>') {
+				} else if (tracer == '&' || tracer == '|' || tracer == '^' || tracer == '~' || tracer == '='|| tracer == '!' || tracer == '/' || tracer == '*' || tracer == '<' || tracer == '>') {
 
 					//printf("here3 %s %c\n", currToken->lexeme, tracer);
 					
@@ -194,11 +209,19 @@ Token* getAllTokens(FILE *code) {
 						currToken->lexeme[1] = '=';
 						j = 2;
 						//printf("everywhere\n");
+					} else if (strcmp(currToken->lexeme, ">") == 0 && tracer == '>') {
+						currToken->lexeme[1] = '>';
+						j = 2;
+						//printf("everywhere\n");
 					} else if (strcmp(currToken->lexeme, "<") == 0 && tracer == '=') {
 						currToken->lexeme[1] = '=';
 						j = 2;
 						//printf("everywhere\n");
-					} else if (strcmp(currToken->lexeme, "=") == 0 && tracer == '=') {
+					} else if (strcmp(currToken->lexeme, "<") == 0 && tracer == '<') {
+						currToken->lexeme[1] = '<';
+						j = 2;
+						//printf("everywhere\n");
+					}  else if (strcmp(currToken->lexeme, "=") == 0 && tracer == '=') {
 						currToken->lexeme[1] = '=';
 						j = 2;
 						//printf("everywhere\n");

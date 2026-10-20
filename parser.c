@@ -481,6 +481,7 @@ void parseAssignment() {
 
 	char mulOrDiv = 0;
 	char op2IsNum = 0;
+	char bitShift = 0;
 
 	expect(ID);
 	if (IDInUse(token->lexeme) == 0) {
@@ -702,6 +703,28 @@ void parseAssignment() {
 		optype = "sub";
 	}
 	
+	//Bitwise and
+	else if (strcmp(token->lexeme, "&") == 0) {
+	        optype = "and";
+	}
+	
+	//Bitwise or
+	else if (strcmp(token->lexeme, "|") == 0) {
+	        optype = "or";
+	}
+	
+	//Bitwise xor
+	else if (strcmp(token->lexeme, "^") == 0) {
+	        optype = "xor";
+	}
+	
+	else {
+	    printf("ERROR: \"%s\" is not a valid operator\n", token->lexeme);
+	    exit(-1);
+	}
+	
+	
+	
 	//TODO Put operands into ACC and C (first value) then B for second value
 	} else if (peek(1) == STAR) {
 		//printf("\nStar\n\n");
@@ -715,6 +738,86 @@ void parseAssignment() {
 		
 		expect(SLASH);
 		mulOrDiv = 2;
+	}
+	
+	else if (peek(1) == BSHIFT) {
+	        expect(BSHIFT);
+	        bitShift = 1;
+	        
+	        if (strcmp(token->lexeme, "<<") == 0) {
+	          optype = "rolc";
+	        }
+	        
+	        else if (strcmp(token->lexeme, ">>") == 0) {
+	          optype = "rorc";
+	        }
+	        
+	        expect(NUM);
+	        
+	        int numShifts = atoi(token->lexeme);
+	        
+	        for (int i = 0; i < numShifts; ++i) {
+                    node->tabCount = tabCount;
+                    node->type = "clr1";
+                    node->op1 = "psw,";
+                    node->op2 = "cy";
+                    newNode();
+                    
+                    node->tabCount = tabCount;
+                    node->type = optype;
+                    newNode();
+                    
+	        }
+	        
+	        if (arrOffset == 1) {
+			//keep the result in b register
+			node->type = "st";
+			node->tabCount = tabCount;
+			node->op1 = "b";
+			newNode();
+			
+			//load the variable offset
+			node->type = "ld";
+			node->tabCount = tabCount;
+			node->op1 = getOp("$", 1, getAddressString(findID(offsetID)->address));
+			newNode();
+			
+			//store offset in c register
+			node->type = "st";
+			node->tabCount = tabCount;
+			node->op1 = "c";
+			newNode();
+			
+			
+			//load the result back into acc
+			node->type = "ld";
+			node->tabCount = tabCount;
+			node->op1 = "b";
+			newNode();
+			
+			//store the result to the offset plus the known address
+			node->type = "st";
+			node->tabCount = tabCount;
+			char addr[4];
+			node->op1 = "c";
+			sprintf(addr, "%x", destination);
+			node->op2 = "+";
+			node->op3 = getOp("$", 1, addr);
+			newNode();
+			
+		} else {
+	
+		node->type = "st";
+		node->tabCount = tabCount;
+		char dest[4];
+		sprintf(dest, "%x", destination);
+		node->op1 = getOp("$", 1, dest);
+		newNode();
+		
+		}
+	        
+	        expect(SEMICOLON);
+	        return;
 	}
 	
 
@@ -855,6 +958,8 @@ void parseAssignment() {
 		newNode();
 		
 		
+	} else if (bitShift != 0) {
+	
 	} else {
 		node->type = optype;
 		node->op1 = op2;
