@@ -205,12 +205,26 @@ void pushParameters() {
 		node->type = "push";
 		node->tabCount = tabCount;
 		//printf("Found a parameter with name %s and address %d\n", tracer->name, tracer->address)
-		if (tracer->variable == 1) {
+		if (tracer->variable == 1) {//a variable is a parameter
 		
 		node->op1 = getOp("$", 1, getAddressString(tracer->address + tracer->index));
 		newNode();
 		
-		} else {
+		} else if (tracer->variable == 2) { //a raw number is a parameter 
+		  
+		  node->tabCount = tabCount;
+		  node->type = "mov";
+		  printf("LOOK HERE: %s", tracer->name);
+		  node->op1 = getOp("#", 1, strcat(tracer->name, ","));
+		  node->op2 = "acc";
+		  newNode();
+		  
+		  node->tabCount = tabCount;
+		  node->type = "push";
+		  node->op1 = "acc";
+		  newNode();
+		  
+		} else { //a ROM address is a parameter
 		
 		//Low byte
 		node->type = "mov";
@@ -254,6 +268,7 @@ void parseParameter() {
 
 	char offset = 0;
 
+        if (peek(1) == ID) {
 	expect(ID);
 	
 	if (IDInUse(token->lexeme) == 0) {
@@ -290,6 +305,18 @@ void parseParameter() {
 	id->next = parameters;
 	id->index = offset;
 	parameters = id;
+	
+	} else {
+	expect(NUM);
+	    
+	IDName* id = (IDName*) malloc(sizeof(IDName));
+	strncpy(id->name, token->lexeme, 1024);
+	id->variable = 2;
+	
+	id->next = parameters;
+	parameters = id;
+	    
+	}
 }
 
 void parseParameterList() {
