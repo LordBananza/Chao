@@ -49,7 +49,7 @@ unsigned char findFreeMemory(int size) {
 	char ready = -1;
 	unsigned char start = 0;
 	int count = 0;
-	for (int i = 128; i < 255; ++i) {
+	for (int i = 16; i < 255; ++i) {
 		if (ready == -1) {
 			if (addresses[i] == 0) {
 				printf("Found potential starting point at %d\n", i);
@@ -1661,14 +1661,14 @@ void parseReturn() {
 	
 	node->type = "push";
 	char* addr = (char*) malloc(4);
-	sprintf(addr, "$%x", 0x35 + addressOffset - 4);
+	sprintf(addr, "$%x", 0xff - addressOffset + 1);
 	node->op1 = addr;
 	node->tabCount = 1;
 	newNode();
 	
 	node->type = "push";
 	char* addr2 = (char*) malloc(4);
-	sprintf(addr2, "$%x", 0x35 + addressOffset - 5);
+	sprintf(addr2, "$%x", 0xff - addressOffset+2);
 	node->op1 = addr2;
 	node->tabCount = 1;
 	newNode();
@@ -1769,14 +1769,14 @@ void parseFunction() {
 	if (strcmp(functionName, "main:") != 0 && data == 0) {
 	node->type = "pop";
 	char* addr = (char*) malloc(4);
-	sprintf(addr, "$%x", 0x32 + addressOffset++);
+	sprintf(addr, "$%x", 0xff - addressOffset++);
 	node->op1 = addr;
 	node->tabCount = 1;
 	newNode();
 	
 	node->type = "pop";
 	char* addr2 = (char*) malloc(4);
-	sprintf(addr2, "$%x", 0x32 + addressOffset++);
+	sprintf(addr2, "$%x", 0xff - addressOffset++);
 	node->op1 = addr2;
 	node->tabCount = 1;
 	newNode();

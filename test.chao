@@ -95,23 +95,23 @@ void checkDPad() {
 			button = buttonLeftPressed();
 			
 			if (button) {
-				x = x - 8;
+				x = x - 1;
 			}
 			
 			button = buttonRightPressed();
 			
 			if (button) {
-				x = x + 8;
+				x = x + 1;
 			}
 			
 			if (oldX != x) {
-			draw(oldX, oldY, length, height, noChao);
+			clear(oldX, oldY, length, height);
 			draw(x, y, length, height, Omochao);
 			return;
 			}
 			
 			if (oldY != y) {
-			draw(oldX, oldY, length, height, noChao);
+			clear(oldX, oldY, length, height);
 			draw(x, y, length, height, Omochao);
 			return;
 			}
@@ -151,7 +151,7 @@ void main() {
 			length = 16;
 			height = 8;
 			
-			draw(x, y, length, height, Omochao);
+			draw(x, y, 16, 8, Omochao);
 			
 		}
 		asm(nop);
