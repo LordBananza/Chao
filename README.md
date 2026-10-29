@@ -6,7 +6,84 @@ Released in 1998, the Sega Dreamcast featured an accessory called the VMU, a mem
 
 This program generates assembly code compatible with use alongside the <code>aslc86k</code> assembler by Marcus Comstedt. It also includes libraries for writing to the display and reading inputs from the VMU's buttons. Future updates may include timers, speaker drivers, and other useful tools for programmers.
 
-# How to Use
+# How to Write Chao Code
+Chao is designed to mimic the C programming language, but there are certainly some limitations to this analogy. Regardless, it is highly recommended to know the basics of coding with C or C-adjacent languages.
+
+## Function Declaration:
+
+Every program must have a function named <code>main</code>. This is where your program begins its execution at. From here, you can create variables, perform mathematical operations on them, and call other functions, too.
+The <code>main</code> function should be specified as follows:
+
+<code>void main() {                                           
+   //Your code here                                           
+}</code>
+
+(Note that <code>main</code> returns void. This is recommended, but not required, since your program should never return out of main. More on that later.)
+
+Any function can call another function so long as it already has been declared earlier in the code. This means that  
+
+<code>char foo(char x) {
+    return 5;
+}
+  
+void main() {                                           
+   char y;
+   y = foo();
+}</code>
+
+is valid code, but
+
+<code>  
+void main() {
+   char y;
+   y = foo();
+}
+  
+  char foo(char x) {
+    return 5;
+}</code>
+
+is not.
+
+## Variable Declaration
+
+The VMU uses an 8-bit processor. As a result, the Chao language is primarily designed to support operations on single byte variables. Since C's <code>char</code> data type is an 8-bit variable, Chao also refers to its 8-bit variables using the same name. However, chars in C are by default signed (supporting a range from -128 to 127), while chars in Chao are always unsigned (supporting a range from 0 to 255). Future updates to the language may support larger data types and the selection between signed and unsigned chars.
+
+There are two main ways to declare a variable:
+
+1. Specify a name:
+   <code> char x;</code>
+
+2. Specify a name and initial value:
+   <code>char x = 5;</code>
+
+If you are declaring an array, you must specify both the name and length of the array like so:
+  <code>char x[32];</code>. This establishes an array of 32 variables of type <code>char</code>.
+
+## Variable Use
+
+Chao contains support for the basic mathematical operations provided by the VMU's processor. This includes addition, subtraction, multiplication, division, bitwise AND, bitwise OR, bitwise XOR, shift left, and shift right. The C language supports many different forms of syntax for specifying these operations, but for the sake of simplicity from the perspective of the programmer, each of them have one particular supported context. Please be sure to match the example syntax as follows:
+
+(<code>x</code> is any variable of type <code>char</code>, and <code>y</code> can be either any variable of type <code>char</code> or an integer value from 0 to 255. <code>n</code> is explicitly an integer from 0 to 255.)
+Addition: <code>x = x + y;</code>
+
+Subtraction: <code>x = y - y;</code>
+
+Muliplication: <code>x = y * y;</code>
+
+Division: <code>x = y / y;</code>
+
+Bitwise AND: <code>x = y & y;</code>
+
+Bitwise OR: <code>x = y | y;</code>
+
+Bitwise XOR: <code>x = y ^ y;</code>
+
+Shift Left: <code>x = y & n;</code>
+
+Shift Right: <code>x = y & n;</code>
+
+# How to Compile Chao Code
 First, clone this repository with 
 <code> git clone https://github.com/LordBananza/Chao </code>
 
