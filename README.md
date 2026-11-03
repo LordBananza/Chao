@@ -9,7 +9,17 @@ This program generates assembly code compatible with use alongside the <code>asl
 # How to Write Chao Code
 Chao is designed to mimic the C programming language, but there are certainly some limitations to this analogy. Regardless, it is highly recommended to know the basics of coding with C or C-adjacent languages.
 
-## Function Declaration:
+## Function Types
+
+Chao functions have three types: 
+
+<code>void</code>, which performs a series of operations and returns nothing to the function that called it;
+<code>char</code>, which performs a series of operations and returns an unsigned 8-bit value to the function that called it;
+and <code>data</code>, which, instead of containing instructions, contains raw data to be used by other functions (often used for displaying custom graphics). Since this function type is not called, no return statement is required.
+
+Both <code>void</code> and <code>char</code> functions require a return statement in order to return to the function that called it. If there is nothing to return, simply write <code>return;</code>; if a value must be returned, write <code>return x;</code>, where x is value/variable desired to be returned.
+
+## Function Declaration
 
 Every program must have a function named <code>main</code>. This is where your program begins its execution at. From here, you can create variables, perform mathematical operations on them, and call other functions, too.
 The <code>main</code> function should be specified as follows:
@@ -18,18 +28,20 @@ The <code>main</code> function should be specified as follows:
    //Your code here                                           
 }</code>
 
-(Note that <code>main</code> returns void. This is recommended, but not required, since your program should never return out of main. More on that later.)
+(Note that <code>main</code> returns void. This is recommended, but not required, since your program should never return out of <code>main</code>.)
 
 Any function can call another function so long as it already has been declared earlier in the code. This means that  
 
-<code>char foo(char x) {
+<code>
+char foo(char x) {
     return 5;
 }
   
 void main() {                                           
    char y;
    y = foo();
-}</code>
+}
+</code>
 
 is valid code, but
 
@@ -41,7 +53,8 @@ void main() {
   
   char foo(char x) {
     return 5;
-}</code>
+}
+</code>
 
 is not.
 
