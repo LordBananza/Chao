@@ -1580,6 +1580,16 @@ void parseReturn() {
 	if (peek(1) == NUM) {
 		expect(NUM);
 		
+		node->type = "pop";
+		node->op1 = "b";
+		node->tabCount = tabCount;
+		newNode();
+		
+		node->type = "pop";
+		node->op1 = "c";
+		node->tabCount = tabCount;
+		newNode();
+		
 		node->type = "mov";
 		node->tabCount = tabCount;
 		node->op1 = strcat(getOp("#", 1, token->lexeme), ",");
@@ -1589,6 +1599,16 @@ void parseReturn() {
 		node->type = "push";
 		node->tabCount = tabCount;
 		node->op1 = "acc";
+		newNode();
+		
+		node->type = "push";
+		node->op1 = "c";
+		node->tabCount = tabCount;
+		newNode();
+		
+		node->type = "push";
+		node->op1 = "b";
+		node->tabCount = tabCount;
 		newNode();
 		
 		
@@ -1631,47 +1651,120 @@ void parseReturn() {
 				node->op1 = getOp("$", 1, getAddressString(offsetAddress));
 				newNode();	
 				
-				//store the offset in c
+				//store the offset in address 3
 				node->tabCount = tabCount;
 				node->type = "st";
-				node->op1 = "c";
+				node->op1 = "3";
 				newNode();
+				
+				node->type = "pop";
+		                node->op1 = "b";
+		                node->tabCount = tabCount;
+		                newNode();
+		
+		                node->type = "pop";
+		                node->op1 = "c";
+		                node->tabCount = tabCount;
+		                newNode();
 				
 				//fetch the value being accessed
 				node->tabCount = tabCount;
 				node->type = "push";
-				node->op1 = "c";
+				node->op1 = "3";
 				node->op2 = "+";
 				node->op3 = getOp("$", 1, getAddressString(address));
 				newNode();
+				
+				node->type = "push";
+		                node->op1 = "c";
+		                node->tabCount = tabCount;
+		                newNode();
+		
+		                node->type = "push";
+		                node->op1 = "b";
+		                node->tabCount = tabCount;
+		                newNode();
 				
 			}
 			expect(RBRACKET);
 			
 			} else {
+			
+			        node->type = "pop";
+		                node->op1 = "b";
+		                node->tabCount = tabCount;
+		                newNode();
+		
+		                node->type = "pop";
+		                node->op1 = "c";
+		                node->tabCount = tabCount;
+		                newNode();
+		                
 				node->type = "push";
 				node->tabCount = tabCount;
 				node->op1 = getOp("$", 1, getAddressString(address));
 				newNode();
+				
+				node->type = "push";
+		                node->op1 = "c";
+		                node->tabCount = tabCount;
+		                newNode();
+		
+		                node->type = "push";
+		                node->op1 = "b";
+		                node->tabCount = tabCount;
+		                newNode();
 			}
 			
 	}
 	
 	if (data == 0) {
 	
-	node->type = "push";
-	char* addr = (char*) malloc(4);
-	sprintf(addr, "$%x", 0xff - addressOffset + 1);
-	node->op1 = addr;
+	/*node->type = "clr1";
+	node->op1 = "psw,";
+	node->op2 = "irbk1";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "clr1";
+	node->op1 = "psw,";
+	node->op2 = "irbk0";
+	node->tabCount = 1;
+	newNode();
+	
+	
+	node->type = "ld";
+	node->op1 = "@R0";
 	node->tabCount = 1;
 	newNode();
 	
 	node->type = "push";
-	char* addr2 = (char*) malloc(4);
-	sprintf(addr2, "$%x", 0xff - addressOffset+2);
-	node->op1 = addr2;
+	node->op1 = "acc";
 	node->tabCount = 1;
 	newNode();
+	
+	node->type = "inc";
+	node->op1 = "retAddr";
+	node->tabCount = 1;
+	newNode();
+	
+	
+	node->type = "ld";
+	node->op1 = "@R0";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "push";
+	node->op1 = "acc";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "inc";
+	node->op1 = "retAddr";
+	node->tabCount = 1;
+	newNode();*/
+	
+	
 	
 	
 	node->type = "ret";
@@ -1733,6 +1826,8 @@ void parseArgumentList() {
 		expect(COMMA);
 		parseArgumentList();
 	}
+	
+	
 
 }
 
@@ -1765,25 +1860,92 @@ void parseFunction() {
 	expect(LPAREN);
 	
 	//Store return addrrss in memory
-	//printf("functionName = %s\n", functionName);
+	//Decrement stack pointer
 	if (strcmp(functionName, "main:") != 0 && data == 0) {
-	node->type = "pop";
-	char* addr = (char*) malloc(4);
-	sprintf(addr, "$%x", 0xff - addressOffset++);
-	node->op1 = addr;
+	
+	/*node->type = "clr1";
+	node->op1 = "psw,";
+	node->op2 = "irbk1";
 	node->tabCount = 1;
 	newNode();
+	
+	node->type = "clr1";
+	node->op1 = "psw,";
+	node->op2 = "irbk0";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "dec";
+	node->op1 = "retAddr";
+	node->tabCount = 1;
+	newNode(); */
+	
+	node->type = "pop";
+	//char* addr = (char*) malloc(4);
+	//sprintf(addr, "$%x", 0xff - addressOffset++);
+	node->op1 = "b";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "pop";
+	//char* addr = (char*) malloc(4);
+	//sprintf(addr, "$%x", 0xff - addressOffset++);
+	node->op1 = "c";
+	node->tabCount = 1;
+	newNode();
+	
+	/*node->type = "st";
+	node->op1 = "@R0";
+	node->tabCount = 1;
+	newNode();
+	
+	
 	
 	node->type = "pop";
 	char* addr2 = (char*) malloc(4);
 	sprintf(addr2, "$%x", 0xff - addressOffset++);
 	node->op1 = addr2;
 	node->tabCount = 1;
+	newNode();*/
+	
+	/*node->type = "dec";
+	node->op1 = "retAddr";
+	node->tabCount = 1;
 	newNode();
+	
+	node->type = "pop";
+	//char* addr = (char*) malloc(4);
+	//sprintf(addr, "$%x", 0xff - addressOffset++);
+	node->op1 = "acc";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "st";
+	node->op1 = "@R0";
+	node->tabCount = 1;
+	newNode();*/
 	
 	}
 
 	parseArgumentList();
+	
+	if (strcmp(functionName, "main:") != 0 && data == 0) {
+	
+	node->type = "push";
+	//char* addr = (char*) malloc(4);
+	//sprintf(addr, "$%x", 0xff - addressOffset + 1);
+	node->op1 = "c";
+	node->tabCount = 1;
+	newNode();
+	
+	node->type = "push";
+	//char* addr2 = (char*) malloc(4);
+	//sprintf(addr2, "$%x", 0xff - addressOffset+2);
+	node->op1 = "b";
+	node->tabCount = 1;
+	newNode();
+	
+	}
 
 	expect(RPAREN);
 

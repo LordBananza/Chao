@@ -97,6 +97,9 @@ void clearScreenSlow() {
 }
 
 void fillScreenSlow() {
+
+        asm(set1 ocr,5);
+
 	count = 0;
 	 
 	asm(mov #0, xbnk);
@@ -125,11 +128,17 @@ void fillScreenSlow() {
 	return;
 }
 
-void drawScreen() {
+void drawScreen(char trh, char trl) {
 	
 	asm(clr1 ocr,5);
 	
+	/* asm(pop trh);
+	asm(pop trl); */
+	
+	pushStack(trh);
 	asm(pop trh);
+	
+	pushStack(trl);
 	asm(pop trl);
 	
 	count = 0;
@@ -183,9 +192,15 @@ void drawScreen() {
 	return;
 }
 
-void drawLine(char xCoord, char yCoord, char length) {
+void drawLine(char xCoord, char yCoord, char length, char trh, char trl) {
 	
+	/* asm(pop trh);
+	asm(pop trl); */
+	
+	pushStack(trh);
 	asm(pop trh);
+	
+	pushStack(trl);
 	asm(pop trl);
 	
 	char offset = xCoord;
