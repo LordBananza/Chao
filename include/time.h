@@ -6,16 +6,20 @@ void sleep_ms (char ms, char multiplier) {
   pushStack(ms);
   
   asm(pop 5);
+  asm(st c);
+  asm(mov #0, acc);
+  asm(mov #6, b);
+  asm(div);
   
   asm(mov #255, acc);
-  asm(sub 5);
+  asm(sub c);
   asm(st t0lr);
   /*
   TODO For multiplier times, load the proper values into T0LR and T0HR, and tT0PRR (prescaler), based on the timer period. Then set the control register to run, and wait in a while loop until the overflow bit is high
   */
   
 
-  asm(mov #255, t0prr);
+  asm(mov #248, t0prr);
   asm(mov #%01000000, t0con);
   
   char waiting = 1;
@@ -40,21 +44,32 @@ void sleep_ms (char ms, char multiplier) {
 
 void sleep(char s) {
 
-  pushStack(s);
+  char i = 0;
+  
+  while (i < s) {
+    sleep_ms(250, 4);
+    i = i + 1;
+  }
+  
+  return;
+
+} 
+
+/*
+pushStack(s);
   
   asm(pop 5);
+  asm(st c);
+  asm(mov #0, acc);
+  asm(mov #8, b);
+  asm(mul);
   
   asm(mov #255, acc);
-  asm(sub 5);
-  asm(clr1 psw, cy);
-  asm(rolc);
+  asm(sub c);
   asm(st t0lr);
-  /*
-  TODO For multiplier times, load the proper values into T0LR and T0HR, and tT0PRR (prescaler), based on the timer period. Then set the control register to run, and wait in a while loop until the overflow bit is high
-  */
   
 
-  asm(mov #0, t0prr);
+  asm(mov #96, t0prr);
   asm(mov #%01000000, t0con);
   
   char waiting = 1;
@@ -67,6 +82,4 @@ void sleep(char s) {
       asm (.skipPoint:  nop);
 
   }
-  return;
-
-} 
+  */
